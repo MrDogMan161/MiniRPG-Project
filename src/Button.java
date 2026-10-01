@@ -5,9 +5,9 @@ import java.util.Objects;
 
 public class Button implements IClickable{
 
-    int width, height,x,y,xText,yText ,font,atk;
+    int width, height,x,y,xText,yText ,font,atk = -1;
     boolean active = false , clickable = false, visible = true,displayText = false,subText = false,display = true,displayImage = false;
-    String text, text2;
+    String text, text2,text3;
     Color textColor = Color.BLACK;
     Image imageIcon;
     GamePanel gp;
@@ -33,7 +33,7 @@ public class Button implements IClickable{
                     imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/chest.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
                     break;
                 case 1 :
-                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/block.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
+                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/actionBookFolder/block.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
                     break;
                 case 2 :
                     imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/dodge.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
@@ -63,7 +63,23 @@ public class Button implements IClickable{
                 g2.setFont(new Font("SansSerif",Font.BOLD,font));
                 g2.setColor(textColor);
 
-                if(subText) {
+                if(subText && text3!=null){
+                    FontMetrics fm = g2.getFontMetrics();
+
+                    xText = fm.stringWidth(text3);
+                    yText = (fm.getHeight() + fm.getAscent())/2;
+
+                    g2.drawString(text3, x + width - xText, y + yText);
+
+                    xText = fm.stringWidth(text2);
+                    yText = fm.getHeight() + fm.getAscent();
+
+                    g2.drawString(text2, x + width - xText, y + yText);
+
+                    yText = ((height - fm.getHeight()) / 2) + fm.getAscent();
+
+                    g2.drawString(text, x, y + yText);
+                }else if(subText) {
                     FontMetrics fm = g2.getFontMetrics();
                     xText = (width - fm.stringWidth(text)) / 2;
                     yText = ((height - fm.getHeight()*2)/2) + fm.getAscent();

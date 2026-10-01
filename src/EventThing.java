@@ -2,15 +2,15 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Random;
 
 public class EventThing {
     int x,y,width,height;
     GamePanel gp;
     Image image,image2;
     boolean visible = false;
-    String type;
+    String name;
     Waiter waiter = new Waiter();
+    Waiter waiter2 = new Waiter();
 
     EventThing(GamePanel gp){
         this.gp = gp;
@@ -25,9 +25,11 @@ public class EventThing {
                     break;
                 case "Heal" :
                     image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/healFountain.png")));
+                    image2 = null;
                     break;
                 case "Skill" :
                     image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/skillStone.png")));
+                    image2 = null;
                     break;
             }
 
@@ -51,17 +53,20 @@ public class EventThing {
 
     public void spawnThing(String name){
         loadImage(name);
-        this.type = name;
+        this.name = name;
         visible = true;
         this.ChangePos(3);
     }
 
     public void doStaff(Player player){
+        if(waiter2.wait(1)){
+            if(image2!=null){image = image2;}
+        }
         if(waiter.wait(5)){
-            switch (type){
-                case "Chest" : image = image2; player.attack++; break;
+            switch (name){
+                case "Chest" : player.attack++; break;
                 case "Heal"  : player.maxHealth++; break;
-                case "Skill" : player.addAttack(new Random().nextInt(16)); break;
+                case "Skill" : player.attack+=5; break;
             }
             gp.curEvent = null;
             this.visible = false;

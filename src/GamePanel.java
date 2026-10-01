@@ -22,8 +22,8 @@ public class GamePanel extends JPanel implements Runnable{
     List<IClickable> clickableList = new ArrayList<>();
 
     bPanel panel = new bPanel(0.5,0.5,3,this); // Class Chooser Tower  1.75
-    bPanel atPanel = new bPanel(0,0.88555,4,this); // left bottom attack panel 1.5
-    bPanel spPanel = new bPanel(0.5,0.7,4,this);
+    ActionPanel acPanel = new ActionPanel(616,607,this);
+
 
     Button startButton = new Button(width/2-400/2,height/2-75/2,400,75,this){
         @Override
@@ -54,6 +54,18 @@ public class GamePanel extends JPanel implements Runnable{
         this.addMouseListener(kH);
         this.setFocusable(true);
 
+        Color cor = Color.WHITE.darker().darker();
+        //acPanel.centerPanelAt(800,750);
+
+        acPanel.panel.setRowsColsMargin(4,1,10);
+        acPanel.panel.addButton("",20,4,Color.WHITE);
+        acPanel.panel.addButton("",20,4,Color.WHITE);
+        acPanel.panel.addButton("",20,4,Color.WHITE);
+        acPanel.panel.addButton("",20,4,Color.WHITE);
+        acPanel.panel.displayButtons();
+        acPanel.panel.setVisible(true);
+        acPanel.panel.visible = false;
+
         entities[0] = player;
         entities[1] = enm1;
         entities[2] = enm2;
@@ -67,26 +79,12 @@ public class GamePanel extends JPanel implements Runnable{
 
         panel.setRowsColsMargin(3,1,28);
         panel.loadIcons(0);
-        Color cor = Color.WHITE.darker().darker();
+
 
         panel.addButton("Warrior",20,-1,cor);
         panel.addButton("Mage",20,-1,cor);
         panel.addButton("Archer",20,-1,cor);
         panel.displayButtons();
-
-        atPanel.setRowsColsMargin(2,2,10);
-        atPanel.loadIcons(1);
-        atPanel.addButton("",20,4,cor);
-        atPanel.addButton("",20,4,cor);
-        atPanel.addButton("",20,4,cor);
-        atPanel.addButton("",20,4,cor);
-        atPanel.displayImageButtons();
-
-        spPanel.loadIcons(1);
-        spPanel.addButton(" ",0,0,cor);
-        spPanel.addButton(" ",0,1,cor);
-        spPanel.addButton(" ",0,2,cor);
-        spPanel.addButton(" ",0,3,cor);
 
         startButton.font = 20;
 
@@ -103,12 +101,10 @@ public class GamePanel extends JPanel implements Runnable{
             throw new RuntimeException(e);
         }
     }
-
     public void startGameThread(){
         gameThread = new Thread(this);
         gameThread.start();
     }
-
     @Override
     public void run() {
         double drawInterval = (double) 1000000000 /FPS;
@@ -136,11 +132,16 @@ public class GamePanel extends JPanel implements Runnable{
         if(!pause){
             // attacking
             takeTurns(1);
+            if(player.CheckDead() && player.name != null){
+                restartGame();
+            }
 
             if(!event.visible && !enm1.visible && !enm2.visible && !enm3.visible){
                 curEvent = null;
             }
             if (curEvent == null) {
+                clearBonuses();
+
                 curEvent = generateEvent();
                 executeEvent(curEvent);
             }
@@ -149,9 +150,16 @@ public class GamePanel extends JPanel implements Runnable{
                 setAttackButtons(i);
             }
 
+            if(player.name != null){
+                acPanel.hp  = player.getHp() + "";
+                acPanel.str = player.getAt() + "";
+                acPanel.def = player.getDf() + "";
+                acPanel.man = player.getMp() + "";
+            }
+
             event.update();
             panel.update();
-            atPanel.update();
+            acPanel.update();
             enm3.update();
             enm2.update();
             enm1.update();
@@ -177,12 +185,8 @@ public class GamePanel extends JPanel implements Runnable{
         g2.drawString("Choose", (this.getParent().getWidth() / 2) - 150, 100);
 
         panel.draw(g2);
-        atPanel.draw(g2);
-        spPanel.draw(g2);
 
         drawEach(g2,panel.buttons);
-        drawEach(g2,atPanel.buttons);
-        drawEach(g2,spPanel.buttons);
 
         event.draw(g2);
         enm3.draw(g2);
@@ -191,6 +195,8 @@ public class GamePanel extends JPanel implements Runnable{
         dude.draw(g2);
         dude1.draw(g2);
         player.draw(g2);
+        player.drawArtifacts(g2);
+        acPanel.draw(g2);
         startButton.draw(g2);
 
         g2.dispose();
@@ -200,16 +206,17 @@ public class GamePanel extends JPanel implements Runnable{
         int rng = new Random().nextInt(10);
         return switch (rng){
             case 0 -> "Skeleton3";
-            case 1 -> "Necromancer";
+            case 1,4 -> "Necromancer";
             case 2,3 -> "Zombie";
-            case 4,5 -> "Skill";
-            case 6,7 -> "Chest";
-            case 8,9 -> "Heal";
+            case 7 -> "Skill";
+            case 8 -> "Chest";
+            case 9 -> "Heal";
             default -> "Skeleton";
         };
     }
 
     public void executeEvent(String eventName){
+        if(player.name==null){return;}
         System.out.println("Executing event " + eventName );
         player.health = player.maxHealth;
         switch(eventName){
@@ -240,21 +247,31 @@ public class GamePanel extends JPanel implements Runnable{
             } else if (!enm3.visible) {
                 enm3 = enem;
             }
+        }else {
+            System.out.println("There are no free space");
         }
     }
-
 
     public static Entity getClothestEnemy(Entity[] enem){
         return enem[0].visible ? enem[0] : enem[1].visible ? enem[1] : enem[2].visible ? enem[2] : null;
     }
 
     public void setAttackButtons(int num){
+        
+        Attack at = null;
         if(player.attacks[num]!=null){
-            //System.out.println("Added attack to button " + num);
-            Attack at = Attack.getAttacks(player.attacks[num]);
-            atPanel.buttons[num].atk = player.attacks[num];
-            atPanel.buttons[num].displayText(at.name, Color.WHITE.darker().darker());
-            atPanel.buttons[num].displaySubText(at.power+" "+at.curUses+"/"+at.maxUses+" "+at.manaUse);
+            at = Attack.getAttacks(player.name,player.attacks[num]);
+        }
+       
+        if(at!=null){
+            acPanel.panel.buttons[num].atk = player.attacks[num];
+            acPanel.panel.buttons[num].displayText(at.name, Color.WHITE.darker().darker());
+            acPanel.panel.buttons[num].displaySubText("d:"+at.power);
+            acPanel.panel.buttons[num].text3 = "m:" + at.manaUse;
+        } else {
+            acPanel.panel.buttons[num].atk = -1;
+            acPanel.panel.buttons[num].displayText = false;
+            acPanel.panel.buttons[num].subText = false;
         }
     }
 
@@ -267,7 +284,12 @@ public class GamePanel extends JPanel implements Runnable{
                     setAttackButtons(0);
                     player.visible = true;
                     panel.setVisible(false);
-                    atPanel.setVisible(true);
+                    acPanel.name = but.text;
+                    acPanel.hp = player.maxHealth+"";
+                    acPanel.str = player.attack+"";
+                    acPanel.def = player.defence+"";
+                    acPanel.man = player.maxMana+"";
+                    acPanel.visible = true;
                     break;
                 }
             }
@@ -275,13 +297,14 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     public void playerAttack(){
-        if (atPanel.buttons[0] != null) {
-            for (int i = 0; i < atPanel.buttons.length; i++) {
-                Button but = atPanel.buttons[i];
-                if (but.active) {
+        if (acPanel.panel.buttons[0] != null) {
+            for (int i = 0; i < acPanel.panel.buttons.length; i++) {
+                Button but = acPanel.panel.buttons[i];
+                if (but.active && but.atk>-1) {
                     but.active = false;
+
                     Entity target = getClothestEnemy(new Entity[]{enm1, enm2, enm3});
-                    Attack at = Attack.getAttacks(but.atk);
+                    Attack at = Attack.getAttacks(player.name,but.atk);
                     if (target != null) {
                         at.doAttack(player, target);
                         if (target.CheckDead() && !enm2.visible && !enm3.visible) {
@@ -321,6 +344,13 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
     }
+    public void clearBonuses(){
+        player.atBonus = 0;
+        player.hpBonus = 0;
+        player.mpBonus = 0;
+        player.dfBonus = 0;
+    }
+
     public void takeTurns(int waitTime){
         if(!event.visible){
             if (turn == 0) {
@@ -367,20 +397,16 @@ public class GamePanel extends JPanel implements Runnable{
         enm3 = new Entity(this);
         enm3.visible = false;
         event = new EventThing(this);
-        atPanel.setVisible(false);
+        acPanel.visible = false;
+        curEvent = null;
+        turn = 0;
+
         startButton.clickable = true;
         startButton.visible = true;
     }
 
     public void startGame(){
         player.ChangePos(0);
-        dude.setClass("Skeleton");
-        dude.ChangePos(1);
-        //dude.visible = true;
-        dude1.setClass("Skeleton");
-        dude1.ChangePos(2);
-        //dude1.visible = true;
-
 
         panel.setVisible(true);
         pause = false;

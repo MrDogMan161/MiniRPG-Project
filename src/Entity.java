@@ -3,9 +3,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Random;
 
 public class Entity {
     int maxHealth,health, attack, defence, mana,maxMana, size = 100, offset = 30;
+    int hpBonus, mpBonus,atBonus,dfBonus;
+    int level = 1, expDrop = 0, expCount = 0, expMax= 2;
     int maxX = 50;
     int x,y,pos,lastDam = 0;
     String name ,curAnim;
@@ -15,6 +18,7 @@ public class Entity {
     Waiter waiter = new Waiter();
     Integer[] attacks = new Integer[4];
 
+    // exp need = lev^2 - previous exp need
 
     Entity(GamePanel gp){
         this.gp = gp;
@@ -27,8 +31,8 @@ public class Entity {
                case "Mage"     : sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/mage.png")));    break;
                case "Archer"   : sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/archer.png")));  break;
                case "Zombie"   : sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/zombie.png")));  break;
-               case "Necromancer": sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/necromancer.png")));  break;
                case "Skeleton" : sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/skeleton.png")));break;
+               case "Necromancer": sprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/necromancer.png")));  break;
            }
            //System.out.println(sprite);
         }catch (IOException e) {
@@ -36,27 +40,28 @@ public class Entity {
         }
     }
 
+    public int getHp(){return this.maxHealth+hpBonus;}
+    public int getMp(){return this.maxMana+mpBonus;}
+    public int getAt(){return this.attack+atBonus;}
+    public int getDf(){return this.defence+dfBonus;}
+
     public void setStats(){
         switch (name){
-            case "Warrior"     : attack = 3 ; maxHealth = 15; defence = 0; maxMana = 5 ; break;
+            case "Warrior"     : attack = 3 ; maxHealth = 10; defence = 0; maxMana = 5 ; break;
             case "Mage"        : attack = 2 ; maxHealth = 8 ; defence = 0; maxMana = 20; break;
             case "Archer"      : attack = 2 ; maxHealth = 10; defence = 0; maxMana = 5 ; break;
-            case "Zombie"      : attack = 1 ; maxHealth = 10; defence = 0; maxMana = 2 ; break;
-            case "Necromancer" : attack = 3 ; maxHealth = 15; defence = 0; maxMana = 10; break;
-            case "Skeleton"    : attack = 1 ; maxHealth = 8 ; defence = 0; maxMana = 2 ; break;
+            case "Zombie"      : attack = 1 ; maxHealth = 10; defence = 0; maxMana = 2 ; expDrop = 1 ; break;
+            case "Skeleton"    : attack = 1 ; maxHealth = 8 ; defence = 0; maxMana = 2 ; expDrop = 1 ; break;
+            case "Necromancer" : attack = 10; maxHealth = 50; defence = 0; maxMana = 10; expDrop = 5 ; break;
 
         }
     }
 
     public void setAttacks(String name){
-        switch (name){
-            case "Warrior"     : attacks[0] = -1  ; break;
-            case "Mage"        : attacks[0] = 5  ; break;
-            case "Archer"      : attacks[0] = 8  ; break;
-            case "Zombie"      : attacks[0] = 2  ; break;
-            case "Necromancer" : attacks[0] = 7  ; break;
-            case "Skeleton"    : attacks[0] = 2  ; break;
-        }
+        attacks[0] = 0;
+        attacks[1] = 1;
+        attacks[2] = 2;
+        attacks[3] = 3;
     }
 
     public void addAttack(int num){
@@ -77,11 +82,20 @@ public class Entity {
     public void attack(Entity target){
         // new Random().nextInt
 
-        if(attacks[0]!=null) {
-            Attack at = Attack.getAttacks(attacks[0]);
+        if(attacks[0]!=null && !this.CheckDead()) {
+            int rn = new Random().nextInt(4);
+            Attack at = Attack.getAttacks(this.name,attacks[rn]);
+            System.out.println(this.name + " tried using attack with number: "+rn);
+            while(at==null)
+            {
+                System.out.println(this.name + " AGAIN "+ rn);
+                rn = new Random().nextInt(4);
+                at = Attack.getAttacks(this.name,attacks[rn]);
+
+            }
             playAnimation("Attack");
             at.doAttack(this, target);
-            System.out.println(at.name);
+
         }
     }
 
@@ -166,6 +180,11 @@ public class Entity {
     }
 
     public void update(){
+        if(expCount>=expMax){
+            expCount-=expMax;
+            level++;
+            expMax = (int) (Math.pow(level,2)-Math.pow(level-1,2));
+        }
         if(playAnim && visible){
             switch(curAnim){
                 case "Attack" :

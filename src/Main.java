@@ -11,14 +11,14 @@ public class Main {
 
         JFrame frame = new JFrame("MiniRPG");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setResizable(true);
+        frame.setResizable(false);
 
         frame.add(gp);
         frame.setVisible(true);
         frame.pack();
         gp.startGameThread();
 
-        System.out.println(frame.getInsets().top);
+        //System.out.println(frame.getInsets().top);
     }
 
 }

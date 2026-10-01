@@ -19,7 +19,6 @@ public class bPanel {
         buttons = new Button[butCount];
         this.gp = gp;
     }
-
     public void loadIcons(int type){
         try {
             switch (type) {
@@ -38,13 +37,15 @@ public class bPanel {
     }
     public void update(){
         this.x = multX==0 ? 0 : (int) (gp.getWidth()* multX - (double) this.width /2);
-        this.y = multY==0 ? 0: (int) (gp.getHeight()*multY - (double) this.height /2);
+        this.y = multY==0 ? 0 : (int) (gp.getHeight()*multY - (double) this.height /2);
 
-        this.width = (int) (image.getWidth(null)* gp.globMult);
-        this.height = (int) (image.getHeight(null)*gp.globMult);
-        if(head!=null) {
-            this.widthH = (int) (head.getWidth(null) * gp.globMult);
-            this.heightH = (int) (head.getHeight(null) * gp.globMult);
+        if(image!=null){
+            this.width = (int) (image.getWidth(null) * gp.globMult);
+            this.height = (int) (image.getHeight(null) * gp.globMult);
+            if (head != null) {
+                this.widthH = (int) (head.getWidth(null) * gp.globMult);
+                this.heightH = (int) (head.getHeight(null) * gp.globMult);
+            }
         }
 
         for (int y1 = 0; y1 < rows; y1++) {
