@@ -10,8 +10,9 @@ public class Entity {
     int hpBonus, mpBonus,atBonus,dfBonus;
     int level = 1, expDrop = 0, expCount = 0, expMax= 2;
     int maxX = 50;
-    int x,y,pos,lastDam = 0;
-    String name ,curAnim , curHealth;
+    int x,y,pos;
+    double powBonus = 1;
+    String name ,curAnim , curHealth,lastDam;
     Image sprite;
     boolean side,playAnim,visible = false,floatingDam;
     GamePanel gp;
@@ -79,6 +80,13 @@ public class Entity {
         attacks[num] = null;
     }
 
+    public void getHurt(double damage){
+        health = (int) (health - Math.max(damage, 0));
+        lastDam = damage>0? "-" + (int)damage : "0";
+        floatingDam = true;
+    }
+
+    // for Enemy AI
     public void attack(Entity target){
         // new Random().nextInt
 
@@ -225,13 +233,13 @@ public class Entity {
                 if(floatingDam){
                     g2.setFont(new Font("SansSerif",Font.BOLD,20));
                     FontMetrics fm = g2.getFontMetrics();
-                    String text = "-"+lastDam;
-                    int xText = (size - fm.stringWidth(text)) / 2;
+
+                    int xText = (size - fm.stringWidth(lastDam)) / 2;
                     int yText =  y - 40;
-                    g2.drawString(text,x+xText,yText);
+                    g2.drawString(lastDam,x+xText,yText);
                     if(waiter.wait(2)){
                         floatingDam = false;
-                        lastDam = 0;
+                        lastDam = null;
                     }
                 }
 

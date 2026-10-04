@@ -1,24 +1,19 @@
-import javax.swing.*;
-import java.awt.*;
 import java.util.Random;
 
 public class Attack {
-    public int power, manaUse,maxUses,curUses, effectPower;
+    public int power, manaUse, effectPower;
     String name , effect;
-    boolean target = true;
     AttackType curType;
 
     enum AttackType{
-        MELEE,RANGE,MAGIC,BUFF,DEBUFF,SPEC
+        MELEE,RANGE,MAGIC,BUFF,DEBUFF,SPEC,FIRE,WATER,GROUND,HOLY,DARK,POISON
     }
 
-    Attack(String name,AttackType type,int power,int manaUse,int maxUses,String effect,int effectPower){
+    Attack(String name,AttackType type,int power,int manaUse,String effect,int effectPower){
         this.power = power;
         this.manaUse = manaUse;
-        this.maxUses = maxUses;
         this.curType = type;
         this.effectPower = effectPower;
-        curUses = maxUses;
         this.name = name;
         this.effect = effect;
     }
@@ -32,13 +27,15 @@ public class Attack {
             case "MaxHealth" : target.hpBonus   += effectPower; break;
             case "Attack"    : target.atBonus   += effectPower; break;
         }
+        target.lastDam = effectPower>0? "+" +effectPower+" "+effect : effectPower+" "+effect;
+        target.floatingDam = true;
         target.mana = Math.min(target.mana, target.getMp());
         target.health = Math.min(target.health, target.getHp());
     }
 
+    // an Actual Attack method
     public void doAttack(Entity user,Entity enemy){
         if(user.CheckDead()){return;}
-        if(curUses<=0){return;}
 
         if(this.curType == AttackType.SPEC){
             switch (this.name){
@@ -46,12 +43,14 @@ public class Attack {
             }
             return;
         }
+
         if(effect!=null) { doEffect(this.curType == AttackType.BUFF ? user : enemy ); }
         if(this.power>0){
-            double dam = ((this.power+ new Random().nextInt((user.getAt()/2),user.getAt()))- enemy.getDf());
-            enemy.health = (int) (enemy.health - Math.max(dam, 0));
-            enemy.lastDam = (int) Math.max(dam, 0);
-            enemy.floatingDam = true;
+            if(user.getClass().getName().equals("Player")){((Player)user).activateArtifacts(1);}
+            int rngDam =  new Random().nextInt((user.getAt()/2),user.getAt());
+            double dam = (((this.power*user.powBonus) + rngDam )- enemy.getDf());
+            user.powBonus = 1;
+            enemy.getHurt(dam);
 
             if(enemy.health<=0){enemy.health=0;}
             System.out.println(user.name + " used " + this.name + " and caused " + dam + " damage");
@@ -59,6 +58,7 @@ public class Attack {
         }else {
             System.out.println(user.name + " used " + this.name + " and caused " + this.effectPower + " stat changes");
         }
+        user.curHealth = user.health + "/" + user.maxHealth;
         enemy.curHealth = enemy.health + "/" + enemy.maxHealth;
     }
 
@@ -67,52 +67,52 @@ public class Attack {
          switch (name){
              case "Warrior" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 3, 0, 5, "", 0); break;
-                     case 1 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 4, 2, 2, "", 0); break;
-                     case 2 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,5,5,"Defence",-1); break;
+                     case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 3, 0,  "", 0); break;
+                     case 1 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 4, 2,  "", 0); break;
+                     case 2 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,5,"Defence",-1); break;
 
                      default : break;
                  } break;
              case "Mage" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Missile",      AttackType.MAGIC,2,0,5,"",0); break;
-                     case 1 : toReturn = new Attack("FireBall",     AttackType.MAGIC,5,5,3,"",0); break;
-                     case 2 : toReturn = new Attack("Dark missile", AttackType.MAGIC,3,5,3,"",0); break;
-                     case 3 : toReturn = new Attack("Heal",         AttackType.BUFF,0,5,5,"Health",2); break;
-                     case 4 : toReturn = new Attack("Strong Heal",  AttackType.BUFF,0,10,5,"Health",5); break;
+                     case 0 : toReturn = new Attack("Missile",      AttackType.MAGIC,2,0,"",0); break;
+                     case 1 : toReturn = new Attack("FireBall",     AttackType.FIRE,5,5,"",0); break;
+                     case 2 : toReturn = new Attack("Dark missile", AttackType.DARK,3,5,"",0); break;
+                     case 3 : toReturn = new Attack("Heal",         AttackType.BUFF,0,5,"Health",2); break;
+                     case 4 : toReturn = new Attack("Strong Heal",  AttackType.BUFF,0,10,"Health",5); break;
 
                      default : break;
                  } break;
              case "Archer" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Arrow Shot",   AttackType.RANGE,3,0,5,"",0); break;
-                     case 1 : toReturn = new Attack("Precise Shot", AttackType.RANGE,6,3,3,"",0); break;
-                     case 2 : toReturn = new Attack("Triple Shot",  AttackType.RANGE,8,10,1,"",0); break;
-                     case 3 : toReturn = new Attack("Debuff",       AttackType.DEBUFF,0,5,5,"Attack",-1); break;
+                     case 0 : toReturn = new Attack("Arrow Shot",   AttackType.RANGE,3,0,"",0); break;
+                     case 1 : toReturn = new Attack("Precise Shot", AttackType.RANGE,6,3,"",0); break;
+                     case 2 : toReturn = new Attack("Triple Shot",  AttackType.RANGE,8,10,"",0); break;
+                     case 3 : toReturn = new Attack("Debuff",       AttackType.DEBUFF,0,5,"Attack",-1); break;
 
                      default : break;
                  } break;
              case "Zombie" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,10,"",0);     break;
-                     case 1 : toReturn = new Attack("Strong Hit",   AttackType.MELEE,3,2,5,"",0);      break;
-                     case 2 : toReturn = new Attack("Weak Heal",    AttackType.BUFF,0,5,5,"Health",1); break;
+                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0);     break;
+                     case 1 : toReturn = new Attack("Strong Hit",   AttackType.MELEE,3,2,"",0);      break;
+                     case 2 : toReturn = new Attack("Weak Heal",    AttackType.BUFF,0,5,"Health",1); break;
 
                      default : break;
                  } break;
              case "Skeleton" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,10,"",0); break;
-                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,5,"",0);  break;
+                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0); break;
+                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,"",0);  break;
 
                      default : break;
                  } break;
              case "Necromancer" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Strong Dark Missile", AttackType.MAGIC,10,5,3,"",0);      break;
-                     case 1 : toReturn = new Attack("Strong Heal",         AttackType.BUFF,0,10,5,"Health",5); break;
-                     case 2 : toReturn = new Attack("Strong DebuffA",      AttackType.BUFF,0,10,5,"Attack",5); break;
-                     case 3 : toReturn = new Attack("Undead Summon",       AttackType.SPEC,0,5,3,"",0);        break;
+                     case 0 : toReturn = new Attack("Strong Dark Missile", AttackType.MAGIC,10,5,"",0);      break;
+                     case 1 : toReturn = new Attack("Strong Heal",         AttackType.BUFF,0,10,"Health",5); break;
+                     case 2 : toReturn = new Attack("Strong DebuffA",      AttackType.BUFF,0,10,"Attack",5); break;
+                     case 3 : toReturn = new Attack("Undead Summon",       AttackType.SPEC,0,5,"",0);        break;
 
                      default : break;
                  } break;

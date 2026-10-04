@@ -37,7 +37,7 @@ public class Chooser {
             case "Skill" :
                 this.title = "Event";
                 this.name = "Skill Stone";
-                this.description = "Stone that adds 5 Attack to your character";
+                this.description = "Stone that adds 1 Attack to your character";
                 break;
             case "Chest" :
                 this.title = "Event";
@@ -102,15 +102,16 @@ public class Chooser {
                     (art.hpBonus!=0? ((int)art.hpBonus) + "Hp" : "") + " " +
                     (art.atBonus!=0? ((int)art.atBonus) + "At" : "") + " " +
                     (art.dfBonus!=0? ((int)art.dfBonus) + "Df" : "") + " " +
-                    (art.mpBonus!=0? ((int)art.mpBonus) + "Mp" : "");
+                    (art.mpBonus!=0? ((int)art.mpBonus) + "Mp" : "") + " " +
+                     art.condDesc;
         }else{ // not flat
             this.description = "Artifacts that adds " +
-                    (art.hpBonus!=0? ((int)art.hpBonus*100) + "%Hp" : "") + " " +
-                    (art.atBonus!=0? ((int)art.atBonus*100) + "%At" : "") + " " +
-                    (art.dfBonus!=0? ((int)art.dfBonus*100) + "%Df" : "") + " " +
-                    (art.mpBonus!=0? ((int)art.mpBonus*100) + "%Mp" : "");
+                    (art.hpBonus!=0? ((art.hpBonus-1)*100) + "%Hp" : "") + " " +
+                    (art.atBonus!=0? ((art.atBonus-1)*100) + "%At" : "") + " " +
+                    (art.dfBonus!=0? ((art.dfBonus-1)*100) + "%Df" : "") + " " +
+                    (art.mpBonus!=0? ((art.mpBonus-1)*100) + "%Mp" : "") + " " +
+                    art.condDesc;
         }
-
 
         visible = true;
     }
@@ -166,12 +167,21 @@ public class Chooser {
             g2.drawImage(displayImage, x + (width / 2 - displayWidth / 2), y + 50, displayWidth, displayHeight, null);
             g2.setFont(new Font("SansSerif", Font.BOLD, 30));
 
+            if(title.equals("Fight")){g2.setColor(Color.RED);}
+            if(title.equals("Artifact")){g2.setColor(Color.YELLOW.darker());}
+            if(title.equals("Event")){g2.setColor(Color.MAGENTA.darker());}
+
             FontMetrics fm = g2.getFontMetrics();
             g2.drawString(title, x + (width / 2 - fm.stringWidth(title) / 2), y + fm.getHeight());
 
+            if(title.equals("Artifact")){g2.setColor(Color.YELLOW);}
+            if(title.equals("Event")){g2.setColor(Color.BLUE.brighter());}
             g2.drawString(name, x + (width / 2 - fm.stringWidth(name) / 2), y + 200);
 
-            if(!choped && fm.stringWidth(description)>width){ chopDescription(fm);}
+            g2.setColor(Color.BLACK);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 20));
+            fm = g2.getFontMetrics();
+            if(!choped && fm.stringWidth(description)>(width-50)){ chopDescription(fm);}
 
             if(!desc3.equals(" ")){
                 g2.drawString(desc2, x + (width / 2 - fm.stringWidth(desc2) / 2), y + 200 + fm.getHeight());
@@ -193,23 +203,25 @@ public class Chooser {
 
     public void chopDescription(FontMetrics fm){
         choped=true;
-        if (fm.stringWidth(description) > width) {
+        if (fm.stringWidth(description) > (width-50)) {
             String[] words = description.split(" ");
             int i = 0;
-            while (fm.stringWidth(desc2) + fm.stringWidth(words[i]) < width) {
+            while (fm.stringWidth(desc2) + fm.stringWidth(words[i]) < (width-50)) {
                 desc2 += words[i] + " ";
                 words[i] = "";
-                i++;
+                if(i<words.length-1){i++;}else{
+                    break;
+                }
             }
 
             description = "";
             for (String word : words) {
                 description += word + " ";
             }
-            if (fm.stringWidth(description) > width) {
+            if (fm.stringWidth(description) > (width-50)) {
                 words = description.split(" ");
                 i = 0;
-                while (fm.stringWidth(desc3) + fm.stringWidth(words[i]) < width) {
+                while (fm.stringWidth(desc3) + fm.stringWidth(words[i]) < (width-50)) {
                     desc3 += words[i] + " ";
                     words[i] = "";
                     i++;

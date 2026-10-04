@@ -66,11 +66,11 @@ public class EventThing {
         if(waiter.wait(2)){
             switch (name){
                 case "Chest" :
-                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(12)));
-                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(12)));
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
                 break;
                 case "Heal"  : player.maxHealth++; break;
-                case "Skill" : player.attack+=5; break;
+                case "Skill" : player.attack++; break;
             }
             gp.curEvent = null;
             this.visible = false;

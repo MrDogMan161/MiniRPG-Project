@@ -24,7 +24,6 @@ public class GamePanel extends JPanel implements Runnable{
     bPanel panel = new bPanel(0.5,0.5,3,this); // Class Chooser Tower  1.75
     ActionPanel acPanel = new ActionPanel(616,607,this);
 
-
     Button startButton = new Button(width/2-400/2,height/2-75/2,400,75,this){
         @Override
         public void action() {
@@ -41,8 +40,6 @@ public class GamePanel extends JPanel implements Runnable{
     Entity enm1 = new Entity(this);
     Entity enm2 = new Entity(this);
     Entity enm3 = new Entity(this);
-
-    Entity[] entities = new Entity[4];
 
     int turn = 0, timer;
 
@@ -66,11 +63,6 @@ public class GamePanel extends JPanel implements Runnable{
         acPanel.panel.setVisible(true);
         acPanel.panel.visible = false;
 
-        entities[0] = player;
-        entities[1] = enm1;
-        entities[2] = enm2;
-        entities[3] = enm3;
-
         startButton.display = false;
         startButton.displayText("Start Game",Color.WHITE.darker().darker());
         startButton.getPicture(4);
@@ -79,7 +71,6 @@ public class GamePanel extends JPanel implements Runnable{
 
         panel.setRowsColsMargin(3,1,28);
         panel.loadIcons(0);
-
 
         panel.addButton("Warrior",20,-1,cor);
         panel.addButton("Mage",20,-1,cor);
@@ -132,6 +123,7 @@ public class GamePanel extends JPanel implements Runnable{
         chooseClass(panel.buttons);
 
         if(!pause){
+            panel.update();
             // attacking
             takeTurns(1);
             if(player.CheckDead() && player.name != null){
@@ -144,7 +136,7 @@ public class GamePanel extends JPanel implements Runnable{
             if (curEvent == null && player.visible && Chooser.choserList.isEmpty()) {
                 clearBonuses();
 
-                player.activateArtifacts();
+                player.activateArtifacts(0);
                 Chooser.addNewChooser(generateEvent());
                 Chooser.addNewChooser(generateEvent());
 
@@ -162,7 +154,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
 
             event.update();
-            panel.update();
+
             acPanel.update();
             enm3.update();
             enm2.update();
@@ -224,8 +216,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void executeEvent(String eventName){
         if(player.name==null || eventName==null){return;}
         System.out.println("Executing event " + eventName );
-        player.health = player.maxHealth;
-        player.curHealth =  player.health + "/" + player.maxHealth;
+
         switch(eventName){
             case "Skeleton3" :
                 this.spawnEnemy("Skeleton");
@@ -259,8 +250,8 @@ public class GamePanel extends JPanel implements Runnable{
         }
     }
 
-    public static Entity getClothestEnemy(Entity[] enem){
-        return enem[0].visible ? enem[0] : enem[1].visible ? enem[1] : enem[2].visible ? enem[2] : null;
+    public Entity getClothestEnemy(){
+        return enm1.visible ? enm1 : enm2.visible ? enm2 : enm3.visible ? enm3 : null;
     }
 
     public void setAttackButtons(int num){
@@ -273,8 +264,8 @@ public class GamePanel extends JPanel implements Runnable{
         if(at!=null){
             acPanel.panel.buttons[num].atk = player.attacks[num];
             acPanel.panel.buttons[num].displayText(at.name, Color.WHITE.darker().darker());
-            acPanel.panel.buttons[num].displaySubText("d:"+at.power);
-            acPanel.panel.buttons[num].text3 = "m:" + at.manaUse;
+            //acPanel.panel.buttons[num].displaySubText("d:"+at.power);
+            //acPanel.panel.buttons[num].text3 = "m:" + at.manaUse;
         } else {
             acPanel.panel.buttons[num].atk = -1;
             acPanel.panel.buttons[num].displayText = false;
@@ -310,10 +301,11 @@ public class GamePanel extends JPanel implements Runnable{
                 if (but.active && but.atk>-1) {
                     but.active = false;
 
-                    Entity target = getClothestEnemy(new Entity[]{enm1, enm2, enm3});
+                    Entity target = getClothestEnemy();
                     Attack at = Attack.getAttacks(player.name,but.atk);
                     if (target != null) {
                         at.doAttack(player, target);
+                        player.activateArtifacts(2);
                         if (target.CheckDead() && !enm2.visible && !enm3.visible) {
                             player.expCount++;
                         } else {
@@ -342,7 +334,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void checkAllClickable(){
         for (IClickable thing : clickableList) {
             if (kH.lMousePressed && thing.checkCollision(kH.lastPressX, kH.lastPressY)) {
-                System.out.println("Clicked");
+                //System.out.println("Clicked");
                 kH.lastPressX = 0;
                 kH.lastPressY = 0;
                 kH.lMousePressed = false;
@@ -357,29 +349,19 @@ public class GamePanel extends JPanel implements Runnable{
         player.mpBonus = 0;
         player.dfBonus = 0;
         for(Artifacts art : player.ownedArt){art.active = false;}
+
+        player.health = player.maxHealth;
+        player.curHealth =  player.health + "/" + player.maxHealth;
     }
 
     public void takeTurns(int waitTime){
         if(!event.visible){
-            if (turn == 0) {
-                playerAttack();
-            } else if (turn == 1) {
-                if (wait(waitTime)) {
-                    enm1.attack(player);
-                    turn++;
-                }
-            } else if (turn == 2) {
-                if (wait(waitTime)) {
-                    enm2.attack(player);
-                    turn++;
-                }
-            } else if (turn == 3) {
-                if (wait(waitTime)) {
-                    enm3.attack(player);
-                    turn++;
-                }
-            } else {
-                turn = 0;
+            switch(turn){
+                case 0 :  playerAttack(); break;
+                case 1 :  if (wait(waitTime)) { enm1.attack(player); turn++;} break;
+                case 2 :  if (wait(waitTime)) { enm2.attack(player); turn++;} break;
+                case 3 :  if (wait(waitTime)) { enm3.attack(player); turn++;} break;
+                default : turn = 0; break;
             }
         }else {
             event.doStaff(player);
