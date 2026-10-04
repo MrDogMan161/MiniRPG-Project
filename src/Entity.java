@@ -11,7 +11,7 @@ public class Entity {
     int level = 1, expDrop = 0, expCount = 0, expMax= 2;
     int maxX = 50;
     int x,y,pos,lastDam = 0;
-    String name ,curAnim;
+    String name ,curAnim , curHealth;
     Image sprite;
     boolean side,playAnim,visible = false,floatingDam;
     GamePanel gp;
@@ -52,7 +52,7 @@ public class Entity {
             case "Archer"      : attack = 2 ; maxHealth = 10; defence = 0; maxMana = 5 ; break;
             case "Zombie"      : attack = 1 ; maxHealth = 10; defence = 0; maxMana = 2 ; expDrop = 1 ; break;
             case "Skeleton"    : attack = 1 ; maxHealth = 8 ; defence = 0; maxMana = 2 ; expDrop = 1 ; break;
-            case "Necromancer" : attack = 10; maxHealth = 50; defence = 0; maxMana = 10; expDrop = 5 ; break;
+            case "Necromancer" : attack = 2; maxHealth = 10; defence = 0; maxMana = 10; expDrop = 5 ; break;
 
         }
     }
@@ -118,6 +118,7 @@ public class Entity {
         side = true;
         this.health = maxHealth;
         this.mana = maxMana;
+        curHealth = health + "/" + maxHealth;
         this.setAttacks(name);
 
     }
@@ -237,7 +238,7 @@ public class Entity {
                 g2.drawImage(sprite, side ? x : x + size, y, side ? size : -size, size, null);
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("SansSerif",Font.BOLD,10));
-                g2.drawString(health + "/" + maxHealth, x+offset, y-20);
+                g2.drawString(curHealth, x+offset, y-20);
             } else {
                 System.out.println("Nuh uh");
             }

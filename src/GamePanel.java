@@ -88,6 +88,8 @@ public class GamePanel extends JPanel implements Runnable{
 
         startButton.font = 20;
 
+        Chooser.gp = this;
+        Artifacts.gp = this;
         loadImages();
 
 
@@ -136,14 +138,16 @@ public class GamePanel extends JPanel implements Runnable{
                 restartGame();
             }
 
-            if(!event.visible && !enm1.visible && !enm2.visible && !enm3.visible){
+            if(Chooser.choserList.isEmpty() && !event.visible && !enm1.visible && !enm2.visible && !enm3.visible){
                 curEvent = null;
             }
-            if (curEvent == null) {
+            if (curEvent == null && player.visible && Chooser.choserList.isEmpty()) {
                 clearBonuses();
 
-                curEvent = generateEvent();
-                executeEvent(curEvent);
+                player.activateArtifacts();
+                Chooser.addNewChooser(generateEvent());
+                Chooser.addNewChooser(generateEvent());
+
             }
 
             for (int i=0;i<4;i++){
@@ -166,6 +170,7 @@ public class GamePanel extends JPanel implements Runnable{
             dude.update();
             dude1.update();
             player.update();
+
             startButton.update();
 
         }
@@ -197,6 +202,7 @@ public class GamePanel extends JPanel implements Runnable{
         player.draw(g2);
         player.drawArtifacts(g2);
         acPanel.draw(g2);
+        Chooser.drawAll(g2);
         startButton.draw(g2);
 
         g2.dispose();
@@ -206,19 +212,20 @@ public class GamePanel extends JPanel implements Runnable{
         int rng = new Random().nextInt(10);
         return switch (rng){
             case 0 -> "Skeleton3";
-            case 1,4 -> "Necromancer";
+            case 4 -> "Necromancer";
             case 2,3 -> "Zombie";
             case 7 -> "Skill";
-            case 8 -> "Chest";
+            case 8,1 -> "Chest";
             case 9 -> "Heal";
             default -> "Skeleton";
         };
     }
 
     public void executeEvent(String eventName){
-        if(player.name==null){return;}
+        if(player.name==null || eventName==null){return;}
         System.out.println("Executing event " + eventName );
         player.health = player.maxHealth;
+        player.curHealth =  player.health + "/" + player.maxHealth;
         switch(eventName){
             case "Skeleton3" :
                 this.spawnEnemy("Skeleton");
@@ -349,6 +356,7 @@ public class GamePanel extends JPanel implements Runnable{
         player.hpBonus = 0;
         player.mpBonus = 0;
         player.dfBonus = 0;
+        for(Artifacts art : player.ownedArt){art.active = false;}
     }
 
     public void takeTurns(int waitTime){
@@ -388,6 +396,7 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void restartGame(){
         pause = true;
+        Chooser.choserList.clear();
         player = new Player(this);
         player.visible = false;
         enm1 = new Entity(this);

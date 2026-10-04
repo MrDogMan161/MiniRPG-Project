@@ -1,22 +1,38 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Chooser {
     int x,y,width = 181,height = 262 , displayWidth = 100,displayHeight = 100;
-    boolean visible = false;
-    static List<Chooser> choserList = new ArrayList<>();
+    boolean visible = false , choped = false;
+    static List<Chooser> choserList = new CopyOnWriteArrayList<>();
     Image image , displayImage;
-    String title,name,description;
-    Artifacts atf;
-    Entity enm;
-    EventThing evn;
+    String title,name,description,desc2 = " ",desc3 = " ",chEvent;
+    Button choseBut;
+    static GamePanel gp;
 
     Chooser(String event){
+        //System.out.println("Current " + event);
+        chEvent = event;
         loadImage(event);
+        width = (int) (image.getWidth(null)*gp.globMult);
+        height = (int) (image.getHeight(null)* gp.globMult);
+        choseBut = new Button(x+18,y+325,237,50,gp){
+            @Override
+            public void action(){
+                gp.curEvent = chEvent;
+                gp.executeEvent(chEvent);
+                clear();
+            }
+        };
+        choseBut.display = false;
+        choseBut.clickable = true;
+        choseBut.visible = true;
+        choseBut.font = 30;
+        choseBut.displayText("Choose",Color.BLACK);
         switch (event){
             case "Skill" :
                 this.title = "Event";
@@ -40,7 +56,7 @@ public class Chooser {
                 break;
             case "Skeleton" :
                 this.title = "Fight";
-                this.name = "Skeleton";
+                this.name = event;
                 this.description = "Begin fight with one Skeleton";
                 break;
             case "Necromancer" :
@@ -54,15 +70,54 @@ public class Chooser {
                 this.description = "Fight three skeletons at once";
                 break;
             default:
-                System.out.println("THERE ARE NO SUCH THING AS " + event);
+                break;
 
         }
-        updatePos();
         visible = true;
     }
+
+    Chooser(Artifacts art){
+        //System.out.println("Current " + event);
+        loadImage(art.name);
+        width = (int) (image.getWidth(null)*gp.globMult);
+        height = (int) (image.getHeight(null)* gp.globMult);
+        choseBut = new Button(x+18,y+325,237,50,gp){
+            @Override
+            public void action(){
+                gp.player.ownedArt.add(art);
+                art.x += (gp.player.ownedArt.size()-1)*100;
+                clear();
+            }
+        };
+        choseBut.display = false;
+        choseBut.clickable = true;
+        choseBut.visible = true;
+        choseBut.font = 30;
+        choseBut.displayText("Choose",Color.BLACK);
+
+        this.title = "Artifact";
+        this.name = art.name;
+        if(!art.flatOrScale){ // flat
+            this.description = "Artifacts that adds " +
+                    (art.hpBonus!=0? ((int)art.hpBonus) + "Hp" : "") + " " +
+                    (art.atBonus!=0? ((int)art.atBonus) + "At" : "") + " " +
+                    (art.dfBonus!=0? ((int)art.dfBonus) + "Df" : "") + " " +
+                    (art.mpBonus!=0? ((int)art.mpBonus) + "Mp" : "");
+        }else{ // not flat
+            this.description = "Artifacts that adds " +
+                    (art.hpBonus!=0? ((int)art.hpBonus*100) + "%Hp" : "") + " " +
+                    (art.atBonus!=0? ((int)art.atBonus*100) + "%At" : "") + " " +
+                    (art.dfBonus!=0? ((int)art.dfBonus*100) + "%Df" : "") + " " +
+                    (art.mpBonus!=0? ((int)art.mpBonus*100) + "%Mp" : "");
+        }
+
+
+        visible = true;
+    }
+
     public void loadImage(String name){
         try {
-            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/tornPaper")));
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/tornPaper.png")));
             switch (name){
                 case "Chest"       : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/chestClosed.png")));  break;
                 case "Heal"        : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/healFountain.png"))); break;
@@ -71,10 +126,12 @@ public class Chooser {
                 case "Skeleton",
                      "Skeleton3"   : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/skeleton.png")));     break;
                 case "Necromancer" : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/necromancer.png")));  break;
-
+                case "Test Shield" : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightShield.png")));  break;
+                case "Test Sword"  : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightSword.png")));   break;
+                default: displayImage = Artifacts.getArtifact(name).image;
             }
 
-        } catch (IOException e) {
+        } catch (IOException ignored) {
 
         }
     }
@@ -84,28 +141,114 @@ public class Chooser {
             case 1 :
                 Chooser chooser = choserList.getFirst();
                 chooser.x = 1600/2 - chooser.width/2;
-                chooser.y = 900/2  - chooser.height/2;
+                chooser.y = (int) (900/2.5  - (double) chooser.height /2);
+                chooser.choseBut.setPosition(chooser.x+18,chooser.y+325);
                 break;
             case 2 :
+                Chooser chooser1 = choserList.getFirst();
+                chooser1.x = (int) ((double) 1600 /2 - (chooser1.width*1.5));
+                chooser1.y = (int) (900/2.5  - (double) chooser1.height /2);
+                chooser1.choseBut.setPosition(chooser1.x+18,chooser1.y+325);
 
-        }
-        for (int i = 0; i < choserList.size(); i++) {
-
+                Chooser chooser2 = choserList.getLast();
+                chooser2.x = 1600/2 + chooser2.width/2;
+                chooser2.y = (int) (900/2.5  - (double) chooser2.height /2);
+                chooser2.choseBut.setPosition(chooser2.x+18,chooser2.y+325);
+                break;
+            default:
+                System.out.println(choserList.size());
         }
     }
 
     public void draw(Graphics2D g2){
-        if(visible){
-            g2.drawImage(image,x,y,width,height,null);
+        if(visible) {
+            g2.drawImage(image, x, y, width, height, null);
+            g2.drawImage(displayImage, x + (width / 2 - displayWidth / 2), y + 50, displayWidth, displayHeight, null);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 30));
+
+            FontMetrics fm = g2.getFontMetrics();
+            g2.drawString(title, x + (width / 2 - fm.stringWidth(title) / 2), y + fm.getHeight());
+
+            g2.drawString(name, x + (width / 2 - fm.stringWidth(name) / 2), y + 200);
+
+            if(!choped && fm.stringWidth(description)>width){ chopDescription(fm);}
+
+            if(!desc3.equals(" ")){
+                g2.drawString(desc2, x + (width / 2 - fm.stringWidth(desc2) / 2), y + 200 + fm.getHeight());
+                g2.drawString(desc3, x + (width / 2 - fm.stringWidth(desc3) / 2), y + 200 + fm.getHeight()*2);
+                g2.drawString(description, x + (width / 2 - fm.stringWidth(description) / 2), y + 200 + fm.getHeight()*3);
+            }else if(!desc2.equals(" ")) {
+                g2.drawString(desc2, x + (width / 2 - fm.stringWidth(desc2) / 2), y + 200 + fm.getHeight());
+                g2.drawString(description, x + (width / 2 - fm.stringWidth(description) / 2), y + 200 + fm.getHeight()*2);
+
+            }else {
+                g2.drawString(description, x + (width / 2 - fm.stringWidth(description) / 2), y + 200 + fm.getHeight());
+            }
+
+
+            choseBut.draw(g2);
+            //g2.fillRect(x+18,y+325,237,50);
         }
-    }
-    public static void drawAll(Graphics2D g2){
-        for(Chooser chooser : choserList){
-            chooser.draw(g2);
-        }
-    }
-    public static void addNewChooser(String event){
-        choserList.add(new Chooser(event));
     }
 
+    public void chopDescription(FontMetrics fm){
+        choped=true;
+        if (fm.stringWidth(description) > width) {
+            String[] words = description.split(" ");
+            int i = 0;
+            while (fm.stringWidth(desc2) + fm.stringWidth(words[i]) < width) {
+                desc2 += words[i] + " ";
+                words[i] = "";
+                i++;
+            }
+
+            description = "";
+            for (String word : words) {
+                description += word + " ";
+            }
+            if (fm.stringWidth(description) > width) {
+                words = description.split(" ");
+                i = 0;
+                while (fm.stringWidth(desc3) + fm.stringWidth(words[i]) < width) {
+                    desc3 += words[i] + " ";
+                    words[i] = "";
+                    i++;
+                }
+                description = "";
+                for (String word : words) {
+                    description += word + " ";
+                }
+                desc3 = desc3.trim();
+            }
+
+            description = description.trim();
+            desc2 = desc2.trim();
+
+        }
+    }
+
+    public static void drawAll(Graphics2D g2){
+        if(!choserList.isEmpty()){
+            for(Chooser chooser : choserList){
+
+                chooser.draw(g2);
+            }
+        }
+
+    }
+    public static void clear(){
+        for(Chooser ch : Chooser.choserList){
+            gp.clickableList.remove(ch.choseBut);
+        }
+        choserList.clear();
+    }
+
+    public static void addNewChooser(String event){
+        choserList.add(new Chooser(event));
+        updatePos();
+    }
+    public static void addNewChooser(Artifacts artifacts){
+        choserList.add(new Chooser(artifacts));
+        updatePos();
+    }
 }

@@ -2,6 +2,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Random;
 
 public class EventThing {
     int x,y,width,height;
@@ -62,9 +63,12 @@ public class EventThing {
         if(waiter2.wait(1)){
             if(image2!=null){image = image2;}
         }
-        if(waiter.wait(5)){
+        if(waiter.wait(2)){
             switch (name){
-                case "Chest" : player.attack++; break;
+                case "Chest" :
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(12)));
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(12)));
+                break;
                 case "Heal"  : player.maxHealth++; break;
                 case "Skill" : player.attack+=5; break;
             }
