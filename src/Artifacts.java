@@ -119,19 +119,28 @@ public class Artifacts {
 
     public static Artifacts getArtifact(String name){
         return switch(name){
-            case "Test Shield"     -> getArtifact(0);
-            case "Test Sword"      -> getArtifact(1);
-            case "Training Arrow"  -> getArtifact(2);
-            case "Novice Scroll"   -> getArtifact(3);
-            case "Wooden Shield"   -> getArtifact(4);
-            case "Sharpening Stone"-> getArtifact(5);
-            case "Veteran's Helmet"-> getArtifact(6);
-            case "Iron Shield"     -> getArtifact(7);
-            case "Steal Heart"     -> getArtifact(8);
-            case "Copper Bracelet" -> getArtifact(9);
-            case "Lucky Coin"      -> getArtifact(10);
-            case "Lucky Dice"      -> getArtifact(11);
-            case "Spiked Shield"   -> getArtifact(12);
+            case "Test Shield"        -> getArtifact(0);
+            case "Test Sword"         -> getArtifact(1);
+            case "Training Arrow"     -> getArtifact(2);
+            case "Novice Scroll"      -> getArtifact(3);
+            case "Wooden Shield"      -> getArtifact(4);
+            case "Sharpening Stone"   -> getArtifact(5);
+            case "Veteran's Helmet"   -> getArtifact(6);
+            case "Iron Shield"        -> getArtifact(7);
+            case "Steal Heart"        -> getArtifact(8);
+            case "Copper Bracelet"    -> getArtifact(9);
+            case "Lucky Coin"         -> getArtifact(10);
+            case "Lucky Dice"         -> getArtifact(11);
+            case "Spiked Shield"      -> getArtifact(12);
+            case "Berserk Heart"      -> getArtifact(13);
+            case "Skull of Suffering" -> getArtifact(14);
+            case "Fire Scroll"        -> getArtifact(15);
+            case "Icicle"             -> getArtifact(16);
+            case "Magic Crystal"      -> getArtifact(17);
+            case "Magic Book"         -> getArtifact(18);
+            case "Magic Eye"          -> getArtifact(19);
+            case "Silver Sword"       -> getArtifact(20);
+            case "Silver Necklace"    -> getArtifact(21);
 
             default -> throw new IllegalStateException("Unexpected value: " + name);
         };
@@ -146,6 +155,14 @@ public class Artifacts {
           case 6 -> "Heal After Enemy kill";
           case 10,11 -> "On Attack has 10% chance to activate";
           case 12 -> "Deal damage to Enemy when Attacked";
+          case 14 -> "When damaged stack 1 At";
+          case 15 -> "Puts Enemies on Fire(WIP)";
+          case 16 -> "Freezes Enemies(WIP)";
+          case 18 -> "Attacks use less mana -1";
+          case 19 -> "If mp is at 1 give +1 and can use any Attack";
+          case 20 -> "Ignore 1 enemy armor";
+          case 21 -> "Increase healing by 1";
+
           default -> " ";
       };
     }
@@ -170,7 +187,7 @@ public class Artifacts {
             case 6 :
                 //gp.player.health += 2;// helmet
                 gp.player.health = Math.min(gp.player.health + 2, gp.player.maxHealth);
-                gp.player.curHealth =  gp.player.health + "/" + gp.player.maxHealth;
+                gp.player.curHealth =  String.valueOf(gp.player.health);
                 break;
             case 10,11:
                 System.out.println("Lucky");

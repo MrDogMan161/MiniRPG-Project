@@ -7,17 +7,24 @@ import java.util.Objects;
 public class bPanel {
 
     int x,y,width,height,widthH,heightH,margin,cols,rows,spX = 0,spY = 0;
-    double multX, multY;
     boolean visible = false;
     Image image, head;
     GamePanel gp;
     Button[] buttons;
 
-    bPanel(double x,double y,int butCount,GamePanel gp){
-        this.multX = x;
-        this.multY = y;
-        buttons = new Button[butCount];
+    bPanel(double multX,double multY,int butCount,int img,GamePanel gp){
         this.gp = gp;
+        loadIcons(img);
+        if(image!=null){
+            this.width = (int) (image.getWidth(null) * gp.pixelMult);
+            this.height = (int) (image.getHeight(null) * gp.pixelMult);
+            if (head != null) {
+                this.widthH = (int) (head.getWidth(null) * gp.pixelMult);
+                this.heightH = (int) (head.getHeight(null) * gp.pixelMult);
+            }
+        }
+        buttons = new Button[butCount];
+        updatePos(multX,multY);
     }
     public void loadIcons(int type){
         try {
@@ -36,17 +43,6 @@ public class bPanel {
         }
     }
     public void update(){
-        this.x = multX==0 ? 0 : (int) (gp.getWidth()* multX - (double) this.width /2);
-        this.y = multY==0 ? 0 : (int) (gp.getHeight()*multY - (double) this.height /2);
-
-        if(image!=null){
-            this.width = (int) (image.getWidth(null) * gp.globMult);
-            this.height = (int) (image.getHeight(null) * gp.globMult);
-            if (head != null) {
-                this.widthH = (int) (head.getWidth(null) * gp.globMult);
-                this.heightH = (int) (head.getHeight(null) * gp.globMult);
-            }
-        }
 
         for (int y1 = 0; y1 < rows; y1++) {
             for (int x1 = 0; x1 < cols; x1++) {
@@ -77,6 +73,11 @@ public class bPanel {
         }
     }
 
+    public void updatePos(double multX,double multY){
+        this.x = multX==0 ? 0 : (int) (gp.width* multX - (double) this.width /2);
+        this.y = multY==0 ? 0 : (int) (gp.height*multY - (double) this.height /2);
+    }
+
     public void setVisible(boolean visible){
         this.visible = visible;
         for (Button but : buttons){
@@ -91,7 +92,7 @@ public class bPanel {
         this.margin = m;
     }
 
-    public void displayButtons(){
+    public void disableButtonsDisplay(){
         for (Button but : buttons){
             but.display = false;
             but.displayImage = false;
@@ -118,6 +119,14 @@ public class bPanel {
         }
 
 
+    }
+
+    public void drawButtons(Graphics2D g2){
+        if (buttons != null) {
+            for (Button but : buttons) {
+                but.draw(g2);
+            }
+        }
     }
 
 }

@@ -17,13 +17,14 @@ public class ActionPanel {
         this.y = y;
         this.gp = gp;
         loadImages();
-        width = (int) (image.getWidth(null)*gp.globMult);
-        height= (int)(image.getHeight(null)*gp.globMult);
+        width  = (int)(image.getWidth(null)*gp.pixelMult);
+        height = (int)(image.getHeight(null)*gp.pixelMult);
 
-        panel = new bPanel(((x+(width*0.74))/1600), (double) (y+height/2.1)/900,4,gp);
+        panel = new bPanel(((x+(width*0.74))/1600), (double) (y+height/2.1)/900,4,-1,gp);
         panel.visible = false;
         panel.height = 250;
         panel.width = 150;
+        panel.updatePos(((x+(width*0.74))/1600), (double) (y+height/2.1)/900);
         panel.setRowsColsMargin(4,1,0);
 
         blockButton = new Button(x+19,y+207,100,50,gp);
@@ -68,10 +69,7 @@ public class ActionPanel {
         panel.update();
         blockButton.update();
         skipButton.update();
-        if(image != null){
-            width = (int) (image.getWidth(null)*gp.globMult);
-            height= (int)(image.getHeight(null)*gp.globMult);
-        }
+
     }
 
     public void draw(Graphics2D g2){
@@ -89,8 +87,8 @@ public class ActionPanel {
 
             g2.drawString(name + " " + gp.player.level, x + 19, y + 37);
 
-            int imWidth  = (int) (hpImage.getWidth(null) *gp.globMult);
-            int imHeight = (int) (hpImage.getHeight(null)*gp.globMult);
+            int imWidth  = (int) (hpImage.getWidth(null) *gp.pixelMult);
+            int imHeight = (int) (hpImage.getHeight(null)*gp.pixelMult);
 
             g2.drawImage(hpImage,x+19,y+50, imWidth, imHeight, null);
             g2.drawString(hp , x + 25+imWidth, y + 50 + ((imWidth - fm.getHeight())/2)+fm.getAscent());
@@ -104,7 +102,7 @@ public class ActionPanel {
             g2.drawImage(mpImage,x+25+(imWidth*2),y+62+imHeight, imWidth, imHeight, null);
             g2.drawString(man , x + 36+(imWidth*3), y+62+imHeight + ((imWidth - fm.getHeight())/2)+fm.getAscent());
 
-            g2.drawImage(equipmentImage,x+19,y+144, (int) (equipmentImage.getWidth(null)*gp.globMult), (int) (equipmentImage.getHeight(null)*gp.globMult),null);
+            g2.drawImage(equipmentImage,x+19,y+144, (int) (equipmentImage.getWidth(null)*gp.pixelMult), (int) (equipmentImage.getHeight(null)*gp.pixelMult),null);
 
             blockButton.draw(g2);
             skipButton.draw(g2);

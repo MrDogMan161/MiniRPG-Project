@@ -10,21 +10,21 @@ public class Chooser {
     boolean visible = false , choped = false;
     static List<Chooser> choserList = new CopyOnWriteArrayList<>();
     Image image , displayImage;
-    String title,name,description,desc2 = " ",desc3 = " ",chEvent;
+    String title,name,description,desc2 = " ",desc3 = " ";
     Button choseBut;
     static GamePanel gp;
 
-    Chooser(String event){
+    Chooser(String event,int id){
         //System.out.println("Current " + event);
-        chEvent = event;
-        loadImage(event);
-        width = (int) (image.getWidth(null)*gp.globMult);
-        height = (int) (image.getHeight(null)* gp.globMult);
+
+        loadImage(event,id);
+        width = (int) (image.getWidth(null)*gp.pixelMult);
+        height = (int) (image.getHeight(null)* gp.pixelMult);
         choseBut = new Button(x+18,y+325,237,50,gp){
             @Override
             public void action(){
-                gp.curEvent = chEvent;
-                gp.executeEvent(chEvent);
+                gp.curEvent = id;
+                gp.executeEvent(event,id);
                 clear();
             }
         };
@@ -49,27 +49,33 @@ public class Chooser {
                 this.name = "Health Fountain";
                 this.description = "Fountain that adds 1 Max Health to your character";
                 break;
-            case "Zombie" :
-                this.title = "Fight";
-                this.name = event;
-                this.description = "Begin fight with one Zombie";
+            case "Shop"   :
+                this.title = "Special";
+                this.name = "Shop";
+                this.description = "Shop where you might by some goods";
                 break;
-            case "Skeleton" :
+            case "Zombie", "Skeleton","Vampire","FireSkull","WaterHand","Knight","Warrior","Archer","Mage"  :
                 this.title = "Fight";
                 this.name = event;
-                this.description = "Begin fight with one Skeleton";
+                this.description = "Begin fight with one "+ event;
+                break;
+            case "EyeMonsters" :
+                this.title = "Fight";
+                this.name = event;
+                this.description = "Begin fight with two Eye Monsters";
                 break;
             case "Necromancer" :
                 this.title = "Fight";
                 this.name = event;
                 this.description = "Fight with boss";
                 break;
-            case "Skeleton3" :
+            case "3Skeleton" :
                 this.title = "Fight";
                 this.name = "Skeleton Triplet";
                 this.description = "Fight three skeletons at once";
                 break;
             default:
+                System.out.println(event);
                 break;
 
         }
@@ -78,9 +84,9 @@ public class Chooser {
 
     Chooser(Artifacts art){
         //System.out.println("Current " + event);
-        loadImage(art.name);
-        width = (int) (image.getWidth(null)*gp.globMult);
-        height = (int) (image.getHeight(null)* gp.globMult);
+        loadImage(art.name,-1);
+        width = (int) (image.getWidth(null)*gp.pixelMult);
+        height = (int) (image.getHeight(null)* gp.pixelMult);
         choseBut = new Button(x+18,y+325,237,50,gp){
             @Override
             public void action(){
@@ -116,19 +122,13 @@ public class Chooser {
         visible = true;
     }
 
-    public void loadImage(String name){
+    public void loadImage(String name , int id){
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/tornPaper.png")));
-            switch (name){
-                case "Chest"       : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/chestClosed.png")));  break;
-                case "Heal"        : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/healFountain.png"))); break;
-                case "Skill"       : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/skillStone.png")));   break;
-                case "Zombie"      : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/zombie.png")));       break;
-                case "Skeleton",
-                     "Skeleton3"   : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/skeleton.png")));     break;
-                case "Necromancer" : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/necromancer.png")));  break;
-                case "Test Shield" : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightShield.png")));  break;
-                case "Test Sword"  : displayImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightSword.png")));   break;
+            switch (id){
+                case 1,2,3,4  : displayImage = new EventStructure(gp).loadImage(name);  break;
+                case 0,5      : displayImage =  new Entity(gp).LoadImage(name);         break;
+
                 default: displayImage = Artifacts.getArtifact(name).image;
             }
 
@@ -155,6 +155,22 @@ public class Chooser {
                 chooser2.x = 1600/2 + chooser2.width/2;
                 chooser2.y = (int) (900/2.5  - (double) chooser2.height /2);
                 chooser2.choseBut.setPosition(chooser2.x+18,chooser2.y+325);
+                break;
+            case 3 :
+                chooser1 = choserList.getFirst();
+                chooser1.x = (int) ((double) 1600 /2 + (chooser1.width*0.6));
+                chooser1.y = (int) (900/2.5  - (double) chooser1.height /2);
+                chooser1.choseBut.setPosition(chooser1.x+18,chooser1.y+325);
+
+                chooser2 = choserList.getLast();
+                chooser2.x = 1600/2 - chooser2.width/2;
+                chooser2.y = (int) (900/2.5  - (double) chooser2.height /2);
+                chooser2.choseBut.setPosition(chooser2.x+18,chooser2.y+325);
+
+                Chooser chooser3 = choserList.get(1);
+                chooser3.x = (int) ((double) 1600 /2 - (chooser3.width*1.6));
+                chooser3.y = (int) (900/2.5  - (double) chooser3.height /2);
+                chooser3.choseBut.setPosition(chooser3.x+18,chooser3.y+325);
                 break;
             default:
                 System.out.println(choserList.size());
@@ -255,8 +271,8 @@ public class Chooser {
         choserList.clear();
     }
 
-    public static void addNewChooser(String event){
-        choserList.add(new Chooser(event));
+    public static void addNewChooser(String event,int id){
+        choserList.add(new Chooser(event,id));
         updatePos();
     }
     public static void addNewChooser(Artifacts artifacts){

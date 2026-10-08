@@ -36,10 +36,9 @@ public class Attack {
     // an Actual Attack method
     public void doAttack(Entity user,Entity enemy){
         if(user.CheckDead()){return;}
-
         if(this.curType == AttackType.SPEC){
             switch (this.name){
-                case "Undead Summon" : user.gp.spawnEnemy("Zombie"); break;
+                case "Undead Summon" : user.gp.spawnEnemy("Zombie",1); break;
             }
             return;
         }
@@ -58,8 +57,9 @@ public class Attack {
         }else {
             System.out.println(user.name + " used " + this.name + " and caused " + this.effectPower + " stat changes");
         }
-        user.curHealth = user.health + "/" + user.maxHealth;
-        enemy.curHealth = enemy.health + "/" + enemy.maxHealth;
+        user.mana -= manaUse;
+        user.curHealth  = String.valueOf(user.health);
+        enemy.curHealth = String.valueOf(enemy.health);
     }
 
     public static Attack getAttacks(String name,int num){
@@ -67,44 +67,68 @@ public class Attack {
          switch (name){
              case "Warrior" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 3, 0,  "", 0); break;
-                     case 1 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 4, 2,  "", 0); break;
-                     case 2 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,5,"Defence",-1); break;
+                     case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 1, 0,  "", 0); break;
+                     // 0,1,2,3 - attack by default
+                     case 4 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 3, 2,  "", 0); break;
+                     case 5 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,5,"Defence",-1); break;
 
                      default : break;
                  } break;
              case "Mage" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Missile",      AttackType.MAGIC,2,0,"",0); break;
-                     case 1 : toReturn = new Attack("FireBall",     AttackType.FIRE,5,5,"",0); break;
-                     case 2 : toReturn = new Attack("Dark missile", AttackType.DARK,3,5,"",0); break;
-                     case 3 : toReturn = new Attack("Heal",         AttackType.BUFF,0,5,"Health",2); break;
-                     case 4 : toReturn = new Attack("Strong Heal",  AttackType.BUFF,0,10,"Health",5); break;
+                     case 0 : toReturn = new Attack("Weak Missile",      AttackType.MAGIC,2,0,"",0); break;
+                     // 0,1,2,3 - attack by default
+                     case 4 : toReturn = new Attack("FireBall",     AttackType.FIRE,5,5,"",0); break;
+                     case 5 : toReturn = new Attack("Dark missile", AttackType.DARK,3,5,"",0); break;
+                     case 6 : toReturn = new Attack("Heal",         AttackType.BUFF,0,5,"Health",2); break;
+                     case 7 : toReturn = new Attack("Strong Heal",  AttackType.BUFF,0,10,"Health",5); break;
 
                      default : break;
                  } break;
              case "Archer" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Arrow Shot",   AttackType.RANGE,3,0,"",0); break;
-                     case 1 : toReturn = new Attack("Precise Shot", AttackType.RANGE,6,3,"",0); break;
-                     case 2 : toReturn = new Attack("Triple Shot",  AttackType.RANGE,8,10,"",0); break;
-                     case 3 : toReturn = new Attack("Debuff",       AttackType.DEBUFF,0,5,"Attack",-1); break;
+                     case 0 : toReturn = new Attack("Arrow Shot",   AttackType.RANGE,2,0,"",0); break;
+                     // 0,1,2,3 - attack by default
+                     case 4 : toReturn = new Attack("Precise Shot", AttackType.RANGE,6,3,"",0); break;
+                     case 5 : toReturn = new Attack("Triple Shot",  AttackType.RANGE,8,10,"",0); break;
+                     case 6 : toReturn = new Attack("Debuff",       AttackType.DEBUFF,0,5,"Attack",-1); break;
 
                      default : break;
                  } break;
              case "Zombie" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0);     break;
+                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0);      break;
                      case 1 : toReturn = new Attack("Strong Hit",   AttackType.MELEE,3,2,"",0);      break;
                      case 2 : toReturn = new Attack("Weak Heal",    AttackType.BUFF,0,5,"Health",1); break;
-
+                     // 0,1,2,3 - attack by default
                      default : break;
                  } break;
              case "Skeleton" :
                  switch (num) {
                      case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0); break;
-                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,"",0);  break;
-
+                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,"",0); break;
+                     // 0,1,2,3 - attack by default
+                     default : break;
+                 } break;
+             case "Vampire" :
+                 switch (num) {
+                     case 0 : toReturn = new Attack("Heavy Hit",    AttackType.MELEE,2,0,"",0); break;
+                     case 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     // 0,1,2,3 - attack by default
+                     default : break;
+                 } break;
+             case "EyeMonster" :
+                 switch (num) {
+                     case 0 : toReturn = new Attack("Byte",    AttackType.MELEE,2,0,"",0); break;
+                     // 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     // 0,1,2,3 - attack by default
+                     default : break;
+                 } break;
+             case "FireSkull","WaterHand","Knight" :
+                 switch (num) {
+                     case 0 : toReturn = new Attack("hit",    AttackType.MELEE,2,0,"",0); break;
+                     // 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     // 0,1,2,3 - attack by default
                      default : break;
                  } break;
              case "Necromancer" :
@@ -113,7 +137,7 @@ public class Attack {
                      case 1 : toReturn = new Attack("Strong Heal",         AttackType.BUFF,0,10,"Health",5); break;
                      case 2 : toReturn = new Attack("Strong DebuffA",      AttackType.BUFF,0,10,"Attack",5); break;
                      case 3 : toReturn = new Attack("Undead Summon",       AttackType.SPEC,0,5,"",0);        break;
-
+                     // 0,1,2,3 - attack by default
                      default : break;
                  } break;
 

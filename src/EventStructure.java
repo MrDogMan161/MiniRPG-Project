@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 
-public class EventThing {
+public class EventStructure {
     int x,y,width,height;
     GamePanel gp;
     Image image,image2;
@@ -13,11 +13,11 @@ public class EventThing {
     Waiter waiter = new Waiter();
     Waiter waiter2 = new Waiter();
 
-    EventThing(GamePanel gp){
+    EventStructure(GamePanel gp){
         this.gp = gp;
     }
 
-    public void loadImage(String name){
+    public Image loadImage(String name){
         try {
             switch (name){
                 case "Chest" :
@@ -32,18 +32,20 @@ public class EventThing {
                     image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/skillStone.png")));
                     image2 = null;
                     break;
+                case "Shop" :
+                    image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/shop.png")));
+                    image2 = null;
+                    break;
             }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return  image;
     }
 
     public void update(){
-        if(image!=null){
-            width = (int) (image.getWidth(null) * gp.globMult);
-            height = (int) (image.getHeight(null) * gp.globMult);
-        }
+
     }
 
     public void draw(Graphics2D g2){
@@ -52,8 +54,12 @@ public class EventThing {
         }
     }
 
-    public void spawnThing(String name){
-        loadImage(name);
+    public void spawnStructure(String name){
+        image = loadImage(name);
+        if(image!=null){
+            width = (int) (image.getWidth(null) * gp.pixelMult);
+            height = (int) (image.getHeight(null) * gp.pixelMult);
+        }
         this.name = name;
         visible = true;
         this.ChangePos(3);
@@ -69,10 +75,15 @@ public class EventThing {
                     Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
                     Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
                 break;
-                case "Heal"  : player.maxHealth++; break;
-                case "Skill" : player.attack++; break;
+                case "Heal"  :
+                    player.maxHealth++;                   // add 1 health
+                    player.health = player.maxHealth;     // heal to full
+                    player.curHealth =  String.valueOf(player.health);
+                    break;
+                case "Skill" :
+                    player.attack++;
+                    break;
             }
-            gp.curEvent = null;
             this.visible = false;
         }
 
@@ -127,5 +138,14 @@ public class EventThing {
 
         }
     }
+    public static String getEvent(){
+        return  switch (new Random().nextInt(2)){
+                case 0 -> "Heal";
+                case 1 -> "Skill";
+                //case 1 -> "Skill";
+                default -> "Warrior";
+        };
 
+
+    }
 }
