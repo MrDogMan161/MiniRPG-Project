@@ -59,7 +59,7 @@ public class Chooser {
                 this.name = event;
                 this.description = "Begin fight with one "+ event;
                 break;
-            case "EyeMonsters" :
+            case "EyeMonster" :
                 this.title = "Fight";
                 this.name = event;
                 this.description = "Begin fight with two Eye Monsters";
@@ -103,21 +103,7 @@ public class Chooser {
 
         this.title = "Artifact";
         this.name = art.name;
-        if(!art.flatOrScale){ // flat
-            this.description = "Artifacts that adds " +
-                    (art.hpBonus!=0? ((int)art.hpBonus) + "Hp" : "") + " " +
-                    (art.atBonus!=0? ((int)art.atBonus) + "At" : "") + " " +
-                    (art.dfBonus!=0? ((int)art.dfBonus) + "Df" : "") + " " +
-                    (art.mpBonus!=0? ((int)art.mpBonus) + "Mp" : "") + " " +
-                     art.condDesc;
-        }else{ // not flat
-            this.description = "Artifacts that adds " +
-                    (art.hpBonus!=0? ((art.hpBonus-1)*100) + "%Hp" : "") + " " +
-                    (art.atBonus!=0? ((art.atBonus-1)*100) + "%At" : "") + " " +
-                    (art.dfBonus!=0? ((art.dfBonus-1)*100) + "%Df" : "") + " " +
-                    (art.mpBonus!=0? ((art.mpBonus-1)*100) + "%Mp" : "") + " " +
-                    art.condDesc;
-        }
+        this.description = art.condDesc;
 
         visible = true;
     }

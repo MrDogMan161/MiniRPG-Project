@@ -4,6 +4,8 @@ import java.util.List;
 
 public class Player extends Entity{
      List<Artifacts> ownedArt = new ArrayList<>();
+     int coins;
+     String coinCount = "Coins: "+coins;
 
     Player(GamePanel gp) {
         super(gp);

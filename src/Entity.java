@@ -1,18 +1,15 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
 public class Entity {
-    int maxHealth;
-    int health;
-    int attack;
-    int defence;
-    int mana;
-    int maxMana;
+    int attack, maxHealth, defence, maxMana;
+    int health, mana;
     int size = 100;
-    int offset = 30;
     int hpBonus, mpBonus,atBonus,dfBonus;
     int level = 1, expDrop = 0, expCount = 0, expMax= 2;
     int maxX = 50;
@@ -24,7 +21,8 @@ public class Entity {
     GamePanel gp;
     Waiter waiter = new Waiter();
     Integer[] attacks = new Integer[4];
-
+    List<Effects> effects = new ArrayList<>();
+    Attack.AttackType[] weakness;
     // exp need = lev^2 - previous exp need
 
     Entity(GamePanel gp){
@@ -69,6 +67,7 @@ public class Entity {
         if(expCount>=expMax){
             expCount-=expMax;
             level++;
+            attack++;maxHealth++;maxMana++;
             expMax = (int) (Math.pow(level,2)-Math.pow(level-1,2));
         }
         if(playAnim && visible){
@@ -96,13 +95,6 @@ public class Entity {
     public void draw(Graphics2D g2){
         if (visible) {
             if (sprite != null) {
-                //g2.setColor(Color.BLACK);
-                //g2.fillRect(x, y - offset, size, offset / 2);
-                //int gap = 3;
-                //g2.setColor(Color.DARK_GRAY);
-                //g2.fillRect(x + gap, gap + y - offset, size - (gap * 2), (offset / 2) - gap*2);
-                //
-
                 g2.drawImage(healthBar,x,y-barHeight,barWidth,barHeight,null);
                 g2.setColor(Color.RED);
                 g2.fillRect(x+31, y-19, (int)((double)health/maxHealth*56), 7);
@@ -129,8 +121,6 @@ public class Entity {
 
                 g2.setColor(Color.BLUE);
                 g2.drawString(String.valueOf(mana),x+size,y-30);
-            } else {
-                System.out.println("Nuh uh");
             }
         }
     }
@@ -140,23 +130,23 @@ public class Entity {
             case "Warrior"     : attack = 3 ; maxHealth = 10; defence = 0; maxMana = 5   ; break;
             case "Mage"        : attack = 2 ; maxHealth = 8 ; defence = 0; maxMana = 20  ; break;
             case "Archer"      : attack = 2 ; maxHealth = 10; defence = 0; maxMana = 5   ; break;
-            case "Zombie"      : attack = 1 ; maxHealth = 5 ; defence = 0; maxMana = 2   ; expDrop = 2 ; break;
-            case "Skeleton"    : attack = 1 ; maxHealth = 4 ; defence = 0; maxMana = 2   ; expDrop = 1 ; break;
+            case "Zombie"      : attack = 1 ; maxHealth = 5 ; defence = 0; maxMana = 2   ; expDrop = 2 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY}; break;
+            case "Skeleton"    : attack = 1 ; maxHealth = 4 ; defence = 0; maxMana = 2   ; expDrop = 1 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
 
-            case "Vampire"     : attack = 3 ; maxHealth = 8 ; defence = 0; maxMana = 5   ; expDrop = 4 ; break;
-            case "EyeMonster"  : attack = 2 ; maxHealth = 5 ; defence = 0; maxMana = 5   ; expDrop = 5 ;  break;
+            case "Vampire"     : attack = 3 ; maxHealth = 8 ; defence = 0; maxMana = 5   ; expDrop = 4 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
+            case "EyeMonster"  : attack = 1 ; maxHealth = 6 ; defence = 0; maxMana = 5   ; expDrop = 5 ; weakness= new Attack.AttackType[]{Attack.AttackType.POISON};  break;
 
-            case "FireSkull"   : attack = 6 ; maxHealth = 12; defence = 0; maxMana = 5   ; expDrop = 6 ;  break;
-            case "WaterHand"   : attack = 5 ; maxHealth = 15 ; defence = 0; maxMana = 2  ; expDrop = 8 ; break;
+            case "FireSkull"   : attack = 6 ; maxHealth = 12; defence = 0; maxMana = 5   ; expDrop = 6 ; weakness= new Attack.AttackType[]{Attack.AttackType.WATER, Attack.AttackType.HOLY};   break;
+            case "WaterHand"   : attack = 5 ; maxHealth = 15 ; defence = 0; maxMana = 2  ; expDrop = 8 ; weakness= new Attack.AttackType[]{Attack.AttackType.GROUND, Attack.AttackType.HOLY}; break;
 
-            case "Knight"      : attack = 10 ; maxHealth = 25 ; defence = 0; maxMana = 2 ; expDrop = 10 ; break;
+            case "Knight"      : attack = 10 ; maxHealth = 25 ; defence = 0; maxMana = 2 ; expDrop = 10 ;weakness= new Attack.AttackType[]{Attack.AttackType.DARK, Attack.AttackType.MAGIC};  break;
 
-            case "Necromancer" : attack = 15 ; maxHealth = 50; defence = 1; maxMana = 10 ; expDrop = 15; break;
+            case "Necromancer" : attack = 15 ; maxHealth = 50; defence = 1; maxMana = 10 ; expDrop = 15; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
 
         }
     }
 
-    public void setAttacks(String name){
+    public void setAttacks(){
         attacks[0] = 0;
         attacks[1] = 1;
         attacks[2] = 2;
@@ -166,7 +156,7 @@ public class Entity {
     public void addAttack(int num){
         for (int i=0; i < attacks.length;i++){
             if (attacks[i]==null){
-                System.out.println("added "+num);
+                //System.out.println("added "+num);
                 attacks[i]= num;
 
                 break;
@@ -178,7 +168,18 @@ public class Entity {
         attacks[num] = null;
     }
 
-    public void getHurt(double damage){
+    public void activateEffect(){
+        if(!effects.isEmpty()){
+            for(Effects effect : effects){
+                effect.doEffect(this);
+            }
+        }
+    }
+
+    public void getHurt(double damage, Attack.AttackType type){
+
+        if(weakness!=null){for(Attack.AttackType weak : weakness){if(weak==type){ damage*=1.5; break;}}}
+
         health = (int) (health - Math.max(damage, 0));
         lastDam = damage>0? "-" + (int)damage : "0";
         floatingDam = true;
@@ -191,9 +192,9 @@ public class Entity {
         if(attacks[0]!=null && !this.CheckDead()) {
             int rn = new Random().nextInt(4);
             Attack at = Attack.getAttacks(this.name,attacks[rn]);
-            System.out.println(this.name + " tried using attack with number: "+rn);
+            //System.out.println(this.name + " tried using attack with number: "+rn);
             while(at==null || at.manaUse>mana) {
-                System.out.println(this.name + " AGAIN "+ rn);
+                //System.out.println(this.name + " AGAIN "+ rn);
                 rn = new Random().nextInt(4);
                 at = Attack.getAttacks(this.name,attacks[rn]);
 
@@ -227,7 +228,7 @@ public class Entity {
         this.health = maxHealth;
         this.mana = maxMana;
         curHealth = String.valueOf(health);
-        this.setAttacks(name);
+        this.setAttacks();
 
     }
 
@@ -293,11 +294,11 @@ public class Entity {
             case 0 -> switch (new Random().nextInt(2)){
                 case 0 -> "Zombie";
                 case 1 -> "Skeleton";
+                //case 2 -> "Vampire";
                 default -> "Warrior";};
-            case 1 -> switch (new Random().nextInt(3)) {
-                case 0 -> "EyeMonsters";
-                case 1 -> "3Skeleton";
-                case 2 -> "Vampire";
+            case 1 -> switch (new Random().nextInt(2)) {
+                case 0 -> "EyeMonster";
+                case 1 -> "Vampire";
                 default -> "Warrior";};
             case 2 -> switch (new Random().nextInt(3)) {
                     case 0 -> "FireSkull";
@@ -309,7 +310,7 @@ public class Entity {
                 //case 1 -> "Demon";    // there are no this guy yet
                 //case 2 -> "EvilTree"; // there are no this guy yet
                 default -> "Warrior";};
-            case 4 -> switch (new Random().nextInt(1)) { // boss
+            case 4 -> switch (new Random().nextInt(2)) { // boss
                 case 0 -> "Necromancer";
                 //case 1 -> "Demon";    // there are no this guy yet
                 //case 2 -> "EvilTree"; // there are no this guy yet

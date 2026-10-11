@@ -72,8 +72,8 @@ public class EventStructure {
         if(waiter.wait(2)){
             switch (name){
                 case "Chest" :
-                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
-                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
+                    player.coins+=5;
+                    player.coinCount = "Coins: "+player.coins;
                 break;
                 case "Heal"  :
                     player.maxHealth++;                   // add 1 health

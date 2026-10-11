@@ -26,6 +26,13 @@ public class Attack {
             case "Health"    : target.health    += effectPower; break;
             case "MaxHealth" : target.hpBonus   += effectPower; break;
             case "Attack"    : target.atBonus   += effectPower; break;
+
+            case "Poison"    : target.effects.add(Effects.createEffect(effect,"Defence",power,3));   break;
+            case "Fire"      : target.effects.add(Effects.createEffect(effect,"",power,3));          break;
+            case "Holy"      : target.effects.add(Effects.createEffect(effect,"MaxMana",power,3));   break;
+            case "Dark"      : target.effects.add(Effects.createEffect(effect,"MaxHealth",power,3)); break;
+            case "Ground"    : target.effects.add(Effects.createEffect(effect,"",power,3));          break;
+
         }
         target.lastDam = effectPower>0? "+" +effectPower+" "+effect : effectPower+" "+effect;
         target.floatingDam = true;
@@ -38,7 +45,8 @@ public class Attack {
         if(user.CheckDead()){return;}
         if(this.curType == AttackType.SPEC){
             switch (this.name){
-                case "Undead Summon" : user.gp.spawnEnemy("Zombie",1); break;
+                case "Undead Summon" : user.gp.spawnEnemy("Zombie",5); break;
+                case "Bat Summon"    : user.gp.spawnEnemy("EyeMonster",5); break;
             }
             return;
         }
@@ -46,16 +54,14 @@ public class Attack {
         if(effect!=null) { doEffect(this.curType == AttackType.BUFF ? user : enemy ); }
         if(this.power>0){
             if(user.getClass().getName().equals("Player")){((Player)user).activateArtifacts(1);}
+            if(enemy.getClass().getName().equals("Player")){((Player)enemy).activateArtifacts(3);}
             int rngDam =  new Random().nextInt((user.getAt()/2),user.getAt());
             double dam = (((this.power*user.powBonus) + rngDam )- enemy.getDf());
             user.powBonus = 1;
-            enemy.getHurt(dam);
+            enemy.getHurt(dam,this.curType);
 
             if(enemy.health<=0){enemy.health=0;}
-            System.out.println(user.name + " used " + this.name + " and caused " + dam + " damage");
-            //System.out.println(user.name + this.power + " " +dam + " " + enemy.health + " " + ((double) enemy.health / enemy.maxHealth));
-        }else {
-            System.out.println(user.name + " used " + this.name + " and caused " + this.effectPower + " stat changes");
+
         }
         user.mana -= manaUse;
         user.curHealth  = String.valueOf(user.health);
@@ -114,6 +120,7 @@ public class Attack {
                  switch (num) {
                      case 0 : toReturn = new Attack("Heavy Hit",    AttackType.MELEE,2,0,"",0); break;
                      case 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     case 2 : toReturn = new Attack("Bat Summon",   AttackType.SPEC,0,5,"Health",1); break;
                      // 0,1,2,3 - attack by default
                      default : break;
                  } break;

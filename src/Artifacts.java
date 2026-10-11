@@ -46,14 +46,14 @@ public class Artifacts {
 
     public static Artifacts getArtifact(int num){
         return switch(num){
-            case 0 -> new Artifacts("Test Shield",        "Knight", 0,0,5,0,  false,num);
+            case 0 -> new Artifacts("Test Shield",        "Knight", 0,0,1,0,  false,num);
             case 1 -> new Artifacts("Test Sword" ,        "Knight", 0,5,0,0,  false,num);
             case 2 -> new Artifacts("Training Arrow",     "Trainee",1,1,0,0,  false,num);
             case 3 -> new Artifacts("Novice Scroll",      "Trainee",0,1,0,1,  false,num);
             case 4 -> new Artifacts("Wooden Shield",      "Trainee",0,1,1,0,  false,num);
             case 5 -> new Artifacts("Sharpening Stone",   "None",   0,1,0,0,  false,num);
             case 6 -> new Artifacts("Veteran's Helmet",   "None",   0,0,0,0,  false,num); // must heal not increase health
-            case 7 -> new Artifacts("Iron Shield",        "Metal",  -5,0,5,0, false,num);
+            case 7 -> new Artifacts("Iron Shield",        "Metal",  -5,0,1,0, false,num);
             case 8 -> new Artifacts("Steal Heart",        "Metal",  2,0,0,0,  false,num);
             case 9 -> new Artifacts("Copper Bracelet",    "Metal",  0,0,1,0,  false,num);
             case 10 -> new Artifacts("Lucky Coin",        "Lucky",  0,1.5,0,0,true, num); // on Attack
@@ -148,16 +148,24 @@ public class Artifacts {
 
     public String getDescription(){
       return switch(id){
-          case 1 -> "if Player have more then 1 df";
-          case 2 -> "When Players Class: Archer";
-          case 3 -> "When Players Class: Mage";
-          case 4 -> "When Players Class: Warrior";
-          case 6 -> "Heal After Enemy kill";
-          case 10,11 -> "On Attack has 10% chance to activate";
-          case 12 -> "Deal damage to Enemy when Attacked";
-          case 14 -> "When damaged stack 1 At";
+          // o -> 4,9
+          case 1 -> "if Player have more then 1 defence gives 5 attack";
+          case 2,5 -> "Gives 1 attack";
+          case 3 -> "Gives 1 mana";
+          case 0,4,9-> "Gives 1 defence";
+          // 5 -> 2
+          case 6 -> "Heal After killing an Enemy";
+          case 7 -> "Gives 1 defence in exchange for 5 health";
+          case 8,13 -> "Gives 2 health";
+          // 9 -> 4
+          case 10 -> "Each Attack has 10% chance to have 150% damage";
+          case 11 -> "Each Attack has 10% chance to have 200% damage";
+          case 12 -> "Deal 1 damage to Enemy when Attacked";
+          // 13 -> 8
+          case 14 -> "When damaged gives 1 attack for single encounter";
           case 15 -> "Puts Enemies on Fire(WIP)";
           case 16 -> "Freezes Enemies(WIP)";
+          case 17 -> "Gives 2 mana";
           case 18 -> "Attacks use less mana -1";
           case 19 -> "If mp is at 1 give +1 and can use any Attack";
           case 20 -> "Ignore 1 enemy armor";
@@ -177,13 +185,7 @@ public class Artifacts {
 
     public void activate(){
         switch(id){
-            case 0,1,2,3,4,5,7,8,9 :
-                active = true;
-                gp.player.atBonus = (int) ( gp.player.atBonus + (!flatOrScale ? atBonus :  gp.player.attack    * atBonus!=0? (atBonus-1) : 0));
-                gp.player.hpBonus = (int) ( gp.player.hpBonus + (!flatOrScale ? hpBonus :  gp.player.maxHealth * hpBonus!=0? (hpBonus-1) : 0));
-                gp.player.dfBonus = (int) ( gp.player.dfBonus + (!flatOrScale ? dfBonus :  gp.player.defence   * dfBonus!=0? (dfBonus-1) : 0));
-                gp.player.mpBonus = (int) ( gp.player.mpBonus + (!flatOrScale ? mpBonus :  gp.player.maxMana   * mpBonus!=0? (mpBonus-1) : 0));
-                break;
+
             case 6 :
                 //gp.player.health += 2;// helmet
                 gp.player.health = Math.min(gp.player.health + 2, gp.player.maxHealth);
@@ -196,11 +198,11 @@ public class Artifacts {
                 gp.player.powBonus += (atBonus-1);
                 break;
             case 12 :
-                gp.getClothestEnemy().getHurt(1); break;
+                gp.getClothestEnemy().getHurt(1, Attack.AttackType.MAGIC); break;
             case 14 :
                 gp.player.atBonus++; break;
             case 15 :
-                gp.getClothestEnemy().getHurt(2); break;
+                gp.getClothestEnemy().getHurt(2, Attack.AttackType.FIRE); break;
             case 16 :
                 gp.turn++;
                 break;
@@ -219,16 +221,23 @@ public class Artifacts {
             case 21 :
                 gp.player.health++;
                 break;
+            default:
+                active = true;
+                gp.player.atBonus = (int) ( gp.player.atBonus + (!flatOrScale ? atBonus :  gp.player.attack    * atBonus!=0? (atBonus-1) : 0));
+                gp.player.hpBonus = (int) ( gp.player.hpBonus + (!flatOrScale ? hpBonus :  gp.player.maxHealth * hpBonus!=0? (hpBonus-1) : 0));
+                gp.player.dfBonus = (int) ( gp.player.dfBonus + (!flatOrScale ? dfBonus :  gp.player.defence   * dfBonus!=0? (dfBonus-1) : 0));
+                gp.player.mpBonus = (int) ( gp.player.mpBonus + (!flatOrScale ? mpBonus :  gp.player.maxMana   * mpBonus!=0? (mpBonus-1) : 0));
+                break;
         }
     }
 
     public void checkCondition(int num){
          switch (num){
-             case 0 : if(checkOnStart() && !active){activate();} break; // 0 for static
-             case 1 : if(checkBeforeAt()){activate();}           break; // 1 for before attack
-             case 2 : if(checkAfterAt()){activate();}            break; // 2 for after attack
-             case 3 : if(checkOnDamaged()){activate();}          break; // 3 for on damaged
-             case 4 : if(checkOnTurn()){activate();}             break; // 4 for on turn
+             case 0 : if(checkOnStart()   && !active){activate();} break; // 0 for static
+             case 1 : if(checkBeforeAt()  && !active){activate();} break; // 1 for before attack
+             case 2 : if(checkAfterAt()   && !active){activate();} break; // 2 for after attack
+             case 3 : if(checkOnDamaged() && !active){activate();} break; // 3 for on damaged
+             case 4 : if(checkOnTurn()    && !active){activate();} break; // 4 for on turn
 
              default : break;
         }
