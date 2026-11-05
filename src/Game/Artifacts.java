@@ -1,3 +1,5 @@
+package Game;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
@@ -56,8 +58,8 @@ public class Artifacts {
             case 7 -> new Artifacts("Iron Shield",        "Metal",  -5,0,1,0, false,num);
             case 8 -> new Artifacts("Steal Heart",        "Metal",  2,0,0,0,  false,num);
             case 9 -> new Artifacts("Copper Bracelet",    "Metal",  0,0,1,0,  false,num);
-            case 10 -> new Artifacts("Lucky Coin",        "Lucky",  0,1.5,0,0,true, num); // on Attack
-            case 11 -> new Artifacts("Lucky Dice",        "Lucky",  0,2,0,0,  true, num); // on Attack
+            case 10 -> new Artifacts("Lucky Coin",        "Lucky",  0,1.5,0,0,true, num); // on Game.Attack
+            case 11 -> new Artifacts("Lucky Dice",        "Lucky",  0,2,0,0,  true, num); // on Game.Attack
             case 12 -> new Artifacts("Spiked Shield",     "Spike",  -1,0,0,0, false,num); // on Damaged
             case 13 -> new Artifacts("Berserk Heart",     "Berserk",0,2,0,0,  false,num);
             case 14 -> new Artifacts("Skull of Suffering","Berserk",0,0,0,0,  false,num); // on Damaged
@@ -149,7 +151,7 @@ public class Artifacts {
     public String getDescription(){
       return switch(id){
           // o -> 4,9
-          case 1 -> "if Player have more then 1 defence gives 5 attack";
+          case 1 -> "if Game.Player have more then 1 defence gives 5 attack";
           case 2,5 -> "Gives 1 attack";
           case 3 -> "Gives 1 mana";
           case 0,4,9-> "Gives 1 defence";
@@ -158,8 +160,8 @@ public class Artifacts {
           case 7 -> "Gives 1 defence in exchange for 5 health";
           case 8,13 -> "Gives 2 health";
           // 9 -> 4
-          case 10 -> "Each Attack has 10% chance to have 150% damage";
-          case 11 -> "Each Attack has 10% chance to have 200% damage";
+          case 10 -> "Each Game.Attack has 10% chance to have 150% damage";
+          case 11 -> "Each Game.Attack has 10% chance to have 200% damage";
           case 12 -> "Deal 1 damage to Enemy when Attacked";
           // 13 -> 8
           case 14 -> "When damaged gives 1 attack for single encounter";
@@ -167,7 +169,7 @@ public class Artifacts {
           case 16 -> "Freezes Enemies(WIP)";
           case 17 -> "Gives 2 mana";
           case 18 -> "Attacks use less mana -1";
-          case 19 -> "If mp is at 1 give +1 and can use any Attack";
+          case 19 -> "If mp is at 1 give +1 and can use any Game.Attack";
           case 20 -> "Ignore 1 enemy armor";
           case 21 -> "Increase healing by 1";
 
@@ -177,7 +179,7 @@ public class Artifacts {
 
     // type activation
     // just adds                                        --> on Start
-    // in battle on attack       + chance of activation --> on Attack
+    // in battle on attack       + chance of activation --> on Game.Attack
     // in battle on getting hurt + chance of activation --> on Damaged
     // on turn                   + chance of activation --> on Turn
     // on kill                   + chance of activation --> on Kill  x
@@ -202,7 +204,7 @@ public class Artifacts {
             case 14 :
                 gp.player.atBonus++; break;
             case 15 :
-                gp.getClothestEnemy().getHurt(2, Attack.AttackType.FIRE); break;
+                gp.getClothestEnemy().effects.add(Effects.createEffect("Fire","Health",1,3)); break;
             case 16 :
                 gp.turn++;
                 break;
@@ -212,7 +214,6 @@ public class Artifacts {
             case 19 :
                 active = true;
                 gp.player.atBonus++;
-                gp.player.mana = gp.player.maxMana;
                 break;
             case 20 :
                 active = true;
@@ -261,8 +262,8 @@ public class Artifacts {
     }
     public boolean checkBeforeAt(){
         return switch (id){
-            case 6 -> gp.getClothestEnemy().health <=0;
             case 10,11 -> getRandom(5); // 1/10 == 10%
+            case 19 -> gp.player.mana==1;
 
             default -> false;
         };
@@ -270,7 +271,9 @@ public class Artifacts {
 
     public boolean checkAfterAt(){
         return switch (id){
-            case 6 -> gp.getClothestEnemy().health <=0;
+            case 6  -> gp.getClothestEnemy().health <=0;
+            case 15,16 -> true;
+
 
             default -> false;
         };
@@ -278,11 +281,8 @@ public class Artifacts {
 
     public boolean checkOnStart(){
         return switch (id){
-            case 0,5,7,8,9 -> true;
+            case 0,2,3,4,5,7,8,9,13,17 -> true;
             case 1 -> gp.player.getDf() > 0;
-            case 2 -> gp.player.name.equals("Archer");
-            case 3 -> gp.player.name.equals("Mage");
-            case 4 -> gp.player.name.equals("Warrior");
 
             default -> false; // 6, 10, 11, 12
         };

@@ -1,3 +1,5 @@
+package Game;
+
 public interface IClickable {
 
     boolean checkCollision(int mouseX, int mouseY);

@@ -1,5 +1,6 @@
+package Game;
+
 import javax.swing.*;
-import java.awt.*;
 
 
 public class Main {
@@ -14,6 +15,7 @@ public class Main {
         frame.setResizable(false);
 
         frame.add(gp);
+        frame.setIconImage(gp.startButton.loadImage("Skeleton"));
         frame.setVisible(true);
         frame.pack();
         gp.startGameThread();

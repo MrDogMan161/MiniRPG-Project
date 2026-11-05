@@ -1,9 +1,11 @@
+package Game;
+
 import java.awt.event.*;
 
-public class KeyHandler implements KeyListener, MouseListener {
+public class KeyHandler implements KeyListener, MouseListener,MouseMotionListener {
 
-    public boolean upPressed,downPressed,leftPressed,rightPressed,lMousePressed;
-    public int lastPressX,lastPressY,curX,curY;
+    public boolean upPressed,downPressed,leftPressed,rightPressed,lMousePressed,mouseMoving;
+    public int lastPressX,lastPressY,curX,curY,dragToX,dragToY,lastX,lastY;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -59,6 +61,8 @@ public class KeyHandler implements KeyListener, MouseListener {
         lastPressX = e.getX();
         lastPressY = e.getY();
         lMousePressed = false;
+        dragToX=0;
+        dragToY=0;
     }
 
     @Override
@@ -70,4 +74,16 @@ public class KeyHandler implements KeyListener, MouseListener {
 
     }
 
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        dragToX = e.getX();
+        dragToY = e.getY();
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        curX = e.getX();
+        curY = e.getY();
+    }
 }

@@ -1,3 +1,5 @@
+package Game;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -13,22 +15,47 @@ public class GamePanel extends JPanel implements Runnable{
     int FPS = 60;
     Thread gameThread;
     KeyHandler kH = new KeyHandler();
-    int width = 1600,height = 900;
-    boolean pause = true;
-    int curRoom = 0;
-    double pixelMult = 6.25;
 
-    Integer[] path = new Integer[22]; // 22 events 1x2x3x2x3x2x3x2x3x1
-    int curEvent;
+    boolean pause = true;
+    public double pixelMult = 6;
+    int width = getPixel(256),height = getPixel(144);
 
     List<IClickable> clickableList = new ArrayList<>();
 
-    bPanel panel = new bPanel(0.5,0.5,3,0,this); // Class Chooser Tower  1.75
-    ActionPanel acPanel = new ActionPanel(616,607,this);
+    ButtonPanel panel = new ButtonPanel(0,0,getPixel(46),getPixel(59),3,this); // Class Game.Chooser Tower  1.75
 
-    Button startButton = new Button(width/2-400/2,height/2-75/2,400,75,this){
+    ActionPanel acPanel = new ActionPanel(getPixel(98),getPixel(97),this);
+    Map map = new Map(this);
+
+    DrawableObject scroll2 = new DrawableObject() {
+        @Override
+        public void draw(Graphics2D g2) {
+            if(visible){
+                g2.setColor(new Color(251, 205, 111));
+                g2.fillRect(x + getPixel(6), y - (scroll2.y - (gp.startButton.y+gp.startButton.height)), getPixel(46), scroll2.y - (gp.startButton.y+gp.startButton.height));
+                g2.setColor(new Color(91, 74, 41));
+                g2.fillRect(x + getPixel(5),  y - (scroll2.y - (gp.startButton.y+gp.startButton.height)), getPixel(1), scroll2.y - (gp.startButton.y+gp.startButton.height));
+                g2.fillRect(x + getPixel(52), y - (scroll2.y - (gp.startButton.y+gp.startButton.height)), getPixel(1), scroll2.y - (gp.startButton.y+gp.startButton.height));//g2.setColor(Color.BLACK);
+
+                g2.setFont(new Font("SansSerif",Font.BOLD,30));
+                FontMetrics fm = g2.getFontMetrics();
+                g2.drawString("Choose Class",x+getPixel(6)+(getPixel(23)-(fm.stringWidth("Choose Class")/2)),y-gp.getPixel(63));
+                g2.drawImage(image, x, y, width, height, null);
+            }
+        }
+    };
+
+    Button startButton = new Button(width/2-getPixel(29),height/2-getPixel(5),getPixel(58),getPixel(11),this){
         @Override
         public void action() {
+            this.y    -= gp.getPixel(40);
+            scroll2.y += gp.getPixel(40);
+
+            panel.x = startButton.x+getPixel(6);
+            panel.y = this.y+this.height+getPixel(10);
+            panel.updateButPos();
+            scroll2.visible = true;
+            this.text = null;
             startGame();
         }
     };
@@ -51,48 +78,55 @@ public class GamePanel extends JPanel implements Runnable{
         this.setDoubleBuffered(true);
         this.addKeyListener(kH);
         this.addMouseListener(kH);
+        this.addMouseMotionListener(kH);
         this.setFocusable(true);
 
         Color cor = Color.WHITE.darker().darker();
         //acPanel.centerPanelAt(800,750);
 
         acPanel.panel.setRowsColsMargin(4,1,10);
-        acPanel.panel.addButton("",20,4,Color.WHITE);
-        acPanel.panel.addButton("",20,4,Color.WHITE);
-        acPanel.panel.addButton("",20,4,Color.WHITE);
-        acPanel.panel.addButton("",20,4,Color.WHITE);
+        acPanel.panel.addButton("",20,Color.WHITE);
+        acPanel.panel.addButton("",20,Color.WHITE);
+        acPanel.panel.addButton("",20,Color.WHITE);
+        acPanel.panel.addButton("",20,Color.WHITE);
 
         acPanel.panel.disableButtonsDisplay();
         acPanel.panel.setVisible(true);
         acPanel.panel.visible = false;
 
+        scroll2.image  = scroll2.loadImage("ScrollBut");
+        scroll2.gp     = this;
+        scroll2.width  = getPixel(58);
+        scroll2.height = getPixel(11);
+        scroll2.x = startButton.x;
+        scroll2.y = startButton.y;
+
         startButton.display = false;
-        startButton.displayText("Start Game",Color.WHITE.darker().darker());
-        startButton.getPicture(4);
+        startButton.displayText("Start Game",Color.WHITE);
+        startButton.image = startButton.loadImage("ScrollBut");
+        startButton.visible = true;
         startButton.clickable = true;
         startButton.displayImage = true;
 
-        panel.setRowsColsMargin(3,1,28);
-
-        panel.addButton("Warrior",20,-1,cor);
-        panel.addButton("Mage",20,-1,cor);
-        panel.addButton("Archer",20,-1,cor);
-        panel.disableButtonsDisplay();
+        panel.setRowsColsMargin(3,1,getPixel(1));
+        panel.addButton("Warrior",20,cor);
+        panel.addButton("Mage",20,cor);
+        panel.addButton("Archer",20,cor);
+        panel.setButtonImage("SignUI");
+        panel.setButtonsSize(getPixel(44),getPixel(18));
+        //panel.disableButtonsDisplay();
 
         startButton.font = 20;
 
-        Chooser.gp = this;
+        Chooser.stGp = this;
         Artifacts.gp = this;
         loadImages();
-
-        generatePath();
 
     }
 
     public void loadImages(){
         try {
-            background = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("background.png")));
-
+            background = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/background2.png")));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -133,31 +167,15 @@ public class GamePanel extends JPanel implements Runnable{
                 restartGame();
             }
 
-            if(checkEventStatus(curEvent) && curEvent==0 && player.visible){
-                curEvent=1;
-                Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
-                Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
-            }
-            if (checkEventStatus(curEvent) && player.visible && Chooser.choserList.isEmpty()) {
-                curRoom++;
-                clearBonuses();
-                player.activateArtifacts(0);
-                showPath();
-            }
+            map.checkEventCompletion();
 
             for (int i=0;i<4;i++){
                 setAttackButtons(i);
             }
 
-            if(player.name != null){
-                acPanel.hp  = player.getHp() + "";
-                acPanel.str = player.getAt() + "";
-                acPanel.def = player.getDf() + "";
-                acPanel.man = player.getMp() + "";
-            }
 
             event.update();
-
+            map.update();
             acPanel.update();
             enm3.update();
             enm2.update();
@@ -178,15 +196,6 @@ public class GamePanel extends JPanel implements Runnable{
 
         g2.drawImage(background,0,0, (int) (background.getWidth(null)* pixelMult),(int)(background.getHeight(null)* pixelMult),null);
 
-        g2.setColor(Color.DARK_GRAY);
-        g2.fillRect((this.getWidth() / 2) - 175, 70, 350, 50);
-        g2.setColor(Color.GRAY.brighter());
-        g2.setFont(new Font("SansSerif", Font.BOLD, 30));
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString("1 - "+curRoom, ((this.getWidth() / 2) - 175)+(350 - fm.stringWidth("1-"+curRoom)) / 2, 100);
-
-        panel.draw(g2);
-        panel.drawButtons(g2);
 
         event.draw(g2);
         enm3.draw(g2);
@@ -198,79 +207,41 @@ public class GamePanel extends JPanel implements Runnable{
         player.drawArtifacts(g2);
         acPanel.draw(g2);
         Chooser.drawAll(g2);
+        map.draw(g2);
+        if (scroll2!= null && scroll2.visible){
+            scroll2.draw(g2);
+        }
+        panel.draw(g2);
+        panel.drawButtons(g2);
+
         startButton.draw(g2);
-        g2.drawString(String.valueOf(player.coinCount),0,fm.getHeight());
 
         g2.dispose();
     }
 
-    public String generateEvent(int id){
-        String toReturn = null;
-        return switch (id){
-            case 0 ->
-                switch (curRoom){
-                    case 0,1,2,3,4,5 -> Entity.getEnemy(0);
-                    //case 3,4   -> Entity.getEnemy(1);
-                    //case 5,6   -> Entity.getEnemy(2);
-                    case 6,7,8   -> Entity.getEnemy(1);
-                    default -> "Archer";
-                };
-            case 1 -> EventStructure.getEvent();
-            case 2 -> "Chest";
-            case 3 -> "Shop";
-            case 4 -> "Warrior";
-            case 5 -> Entity.getEnemy(4);
-            default -> "Acrcher";
-
-        };
-    }
-
-    public void showPath(){
-        if(player.name==null || curEvent<0){return;}
-        if(curRoom == 0 || curRoom == 9){
-
-            Chooser.addNewChooser(generateEvent(path[curRoom==9? 21 : 0]),path[curRoom==9? 21 : 0]); // 0
-        }else if(curRoom%2==0){
-            int fNum =(int) (curRoom*2.5-1.5),sNum = (int) (curRoom*2.5-0.5) ;
-            Chooser.addNewChooser(generateEvent(path[fNum]),path[fNum]); // 1,3,5,7
-            Chooser.addNewChooser(generateEvent(path[sNum]),path[sNum]); // 1,2; 3,4; 5,6, 7,8
-        }else {
-            int fNum =(int) (curRoom*2.5-2), sNum = (int) (curRoom*2.5-1) , tNum =(int) (curRoom*2.5) ;
-            Chooser.addNewChooser(generateEvent(path[fNum]),path[fNum]); // 1,3,5,7
-            Chooser.addNewChooser(generateEvent(path[sNum]),path[sNum]); // 3,4,5
-            Chooser.addNewChooser(generateEvent(path[tNum]),path[tNum]);
-        }
-        //System.out.println(curRoom);
-    }
-
-    public boolean checkEventStatus(int id){
-        return switch (id){
-            case 0,5 -> !enm1.visible && !enm2.visible && !enm3.visible;
-            case 1,2,3,4 -> !event.visible; // event, chest , shop , ally
-            default -> true;
-        };
-    }
-
-    public void executeEvent(String name,int id){
+    public void executeEvent(int id){
         if(player.name==null){return;}
-         switch (id){
-             case 0,5 : spawnEnemy(name,1); break;
-             case 1,2,3,4 : event.spawnStructure(name); break;
+        switch (id){
+            case 1,5 : spawnEnemy("Skeleton",1); break;
+            case 2,3,4 : event.spawnStructure(id); break;
+            default:
+                System.out.println("There are no " +id);
         }
     }
 
     public void spawnEnemy(String name , int count){
-        if(curRoom<4){count = 1;}
-        else if (curRoom<7 && !name.equals("Vampire") && !name.equals("Necromancer")) {count = 2;}
-        else if (curRoom>6 && !name.equals("Vampire") && !name.equals("Necromancer") && count!=5) {count = 3;}
+        if(map.currentFloor<8){count = 3;}
+        else if (map.currentFloor<13 && !name.equals("Vampire") && !name.equals("Necromancer")) {count = 2;}
+        else if (map.currentFloor>12 && !name.equals("Vampire") && !name.equals("Necromancer") && count!=5) {count = 3;}
 
+        System.out.println("Spawning enemy " + name);
         for(int i = 0; i <count; i++) {
             if (!enm1.visible || !enm2.visible || !enm3.visible) {
-                //System.out.println("Spawning enemy " + name);
+
                 Entity enem = new Entity(this);
                 enem.setClass(name);
-
                 enem.ChangePos(!enm1.visible ? 3 : !enm2.visible ? 4 : 5);
+                enem.mirrored = true;
                 enem.visible = true;
                 if (!enm1.visible) {
                     enm1 = enem;
@@ -330,11 +301,12 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void takeTurns(int waitTime){
         if(!event.visible){
+
             switch(turn){
-                case 0 :  playerAttack(); player.activateEffect(); break;
-                case 1 :  if (wait(waitTime)) { enm1.attack(player); enm1.activateEffect(); turn++;} break;
-                case 2 :  if (wait(waitTime)) { enm2.attack(player); enm2.activateEffect(); turn++;} break;
-                case 3 :  if (wait(waitTime)) { enm3.attack(player); enm3.activateEffect(); turn++;} break;
+                case 0 :  playerAttack();if(turn!=0) {updateEffects();}       break;
+                case 1 :  if (wait(waitTime)) { enm1.attack(player); turn++;} break;
+                case 2 :  if (wait(waitTime)) { enm2.attack(player); turn++;} break;
+                case 3 :  if (wait(waitTime)) { enm3.attack(player); turn++;} break;
                 default : turn = 0; break;
             }
         }else {
@@ -354,13 +326,17 @@ public class GamePanel extends JPanel implements Runnable{
                     setAttackButtons(0);
                     player.visible = true;
                     panel.setVisible(false);
+                    startButton.visible = false;
+                    scroll2.visible = false;
+
                     acPanel.name = but.text;
                     acPanel.hp = player.maxHealth+"";
                     acPanel.str = player.attack+"";
                     acPanel.def = player.defence+"";
                     acPanel.man = player.maxMana+"";
                     acPanel.visible = true;
-                    executeEvent(generateEvent(path[0]),0);
+                    map.generatePath();
+                    map.showMap();
                     break;
                 }
             }
@@ -384,6 +360,13 @@ public class GamePanel extends JPanel implements Runnable{
         }
     }
 
+    public void updateEffects(){
+        player.activateEffect();
+        enm1.activateEffect();
+        enm2.activateEffect();
+        enm3.activateEffect();
+    }
+
     public void restartGame(){
         pause = true;
         Chooser.choserList.clear();
@@ -397,8 +380,9 @@ public class GamePanel extends JPanel implements Runnable{
         enm3.visible = false;
         event = new EventStructure(this);
         acPanel.visible = false;
-        curEvent = 0;
-        curRoom=0;
+        map.currentRoom = -1;
+        map.currentFloor= -1;
+        map.path = new int[15][7][4];
         turn = 0;
 
         startButton.clickable = true;
@@ -411,46 +395,12 @@ public class GamePanel extends JPanel implements Runnable{
         panel.setVisible(true);
         pause = false;
         startButton.clickable = false;
-        startButton.visible = false;
+
+        //startButton.visible = false;
+
     }
     // end of Actions for Buttons
     // Utilities
-    public void generatePath(){
-        for (int i = 0; i < 10; i++) {
-            switch (i){
-                case 0 :
-                    path[0] = 0;
-                    break;
-                case 1,5 :
-                    int fNum =(int) (i*2.5-1.5),sNum = (int) (i*2.5-0.5) ;
-                    path[fNum] = new Random().nextInt(2);
-                    path[sNum] = path[fNum]!=0 ? 0 : new Random().nextInt(3);
-                    break;
-                case 2,4,6,8 :
-                    fNum =(int) (i*2.5-2); sNum = (int) (i*2.5-1) ; int tNum =(int) (i*2.5) ;
-                    path[fNum] = new Random().nextInt(2);
-                    path[sNum] = path[fNum]!=0 ? 0 : new Random().nextInt(3) ;
-                    path[tNum] = path[fNum]!=0 ^ path[sNum]!=0 ? 0 : new Random().nextInt(3) ;
-                    break;
-                case 3,7 :
-                    fNum =(int) (i*2.5-1.5); sNum = (int) (i*2.5-0.5) ;
-                    path[fNum] = new Random().nextInt(4);
-                    path[sNum] = path[fNum]==3 ? new Random().nextInt(3) : 3 ;
-                    break;
-                case 9 :
-                    path[21] = 5;
-                    break;
-
-            }
-        }
-        for (int i = 0; i < path.length; i++) {
-            //System.out.println(i+" "+path[i]);
-        }
-
-
-
-    }
-
     public boolean wait(int secs){
         int frames = FPS *secs;
         boolean toReturn = false;
@@ -475,4 +425,6 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
     }
+
+    public int getPixel(int pixels){return (int) (pixels*pixelMult);}
 }

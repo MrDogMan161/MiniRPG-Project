@@ -1,16 +1,16 @@
-import javax.imageio.ImageIO;
+package Game;
+
 import java.awt.*;
-import java.io.IOException;
-import java.util.Objects;
 
-public class Button implements IClickable{
 
-    int width, height,x,y,xText,yText ,font,atk = -1;
-    boolean active = false , clickable = false, visible = true,displayText = false,subText = false,display = true,displayImage = false;
+public class Button extends DrawableObject implements IClickable{
+
+    int xText,yText ,font,atk = -1;
+    boolean active = false , clickable = false, displayText = false,subText = false,display = false,displayImage = false;
+    boolean overlay = false;
     String text, text2,text3;
     Color textColor = Color.BLACK;
-    Image imageIcon;
-    GamePanel gp;
+
 
     Button(GamePanel gp){
         this.gp = gp;
@@ -26,45 +26,21 @@ public class Button implements IClickable{
         gp.clickableList.add(this);
     }
 
-    public void getPicture(int type){
-        try {
-            switch (type){
-                case 0 :
-                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/chest.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
-                    break;
-                case 1 :
-                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/actionBookFolder/block.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
-                    break;
-                case 2 :
-                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/dodge.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
-                    break;
-                case 3 :
-                    imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/skip.png"))).getScaledInstance(100,100,Image.SCALE_SMOOTH);
-                    break;
-                default: imageIcon = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("signUI.png")));
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     public void draw(Graphics2D g2){
         if(visible) {
-
             if(display) {
                 g2.fillRect(x, y, width, height);
             }
             if (displayImage) {
-                g2.drawImage(imageIcon, x, y, width, height, null);
+                g2.drawImage(image, x, y, width, height, null);
             }
+            g2.setFont(new Font("SansSerif",Font.BOLD,font));
+            FontMetrics fm = g2.getFontMetrics();
             if (text != null && displayText){
-                g2.setFont(new Font("SansSerif",Font.BOLD,font));
+
                 g2.setColor(textColor);
 
                 if(subText && text3!=null){
-                    FontMetrics fm = g2.getFontMetrics();
 
                     xText = fm.stringWidth(text3);
                     yText = (fm.getHeight() + fm.getAscent())/2;
@@ -80,7 +56,6 @@ public class Button implements IClickable{
 
                     g2.drawString(text, x, y + yText);
                 }else if(subText) {
-                    FontMetrics fm = g2.getFontMetrics();
                     xText = (width - fm.stringWidth(text)) / 2;
                     yText = ((height - fm.getHeight()*2)/2) + fm.getAscent();
                     g2.drawString(text, x + xText, y + yText);
@@ -89,15 +64,16 @@ public class Button implements IClickable{
                     yText = ((height - fm.getHeight()/2) / 2) + fm.getAscent();
                     g2.drawString(text2, x + xText, y + yText);
                 }else{
-                    FontMetrics fm = g2.getFontMetrics();
                     xText = (width - fm.stringWidth(text)) / 2;
                     yText = ((height - fm.getHeight()) / 2) + fm.getAscent();
 
                     g2.drawString(text, x + xText, y + yText);
                 }
             }
+
         }
     }
+
     public void update(){
 
     }

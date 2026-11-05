@@ -1,3 +1,5 @@
+package Game;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
@@ -5,27 +7,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Chooser {
-    int x,y,width = 181,height = 262 , displayWidth = 100,displayHeight = 100;
-    boolean visible = false , choped = false;
+public class Chooser extends DrawableObject {
+    int displayWidth = (int) (16* stGp.pixelMult),displayHeight = (int) (16* stGp.pixelMult);
+    boolean choped = false;
     static List<Chooser> choserList = new CopyOnWriteArrayList<>();
-    Image image , displayImage;
+    Image displayImage;
     String title,name,description,desc2 = " ",desc3 = " ";
     Button choseBut;
-    static GamePanel gp;
+    static GamePanel stGp;
 
     Chooser(String event,int id){
         //System.out.println("Current " + event);
 
         loadImage(event,id);
-        width = (int) (image.getWidth(null)*gp.pixelMult);
-        height = (int) (image.getHeight(null)* gp.pixelMult);
-        choseBut = new Button(x+18,y+325,237,50,gp){
+        width = (int) (image.getWidth(null)* stGp.pixelMult);
+        height = (int) (image.getHeight(null)* stGp.pixelMult);
+        choseBut = new Button(x+18,y+325,237,50, stGp){
             @Override
             public void action(){
-                gp.curEvent = id;
-                gp.executeEvent(event,id);
                 clear();
+                // no need for isCLicked cuz active is not present
             }
         };
         choseBut.display = false;
@@ -37,7 +38,7 @@ public class Chooser {
             case "Skill" :
                 this.title = "Event";
                 this.name = "Skill Stone";
-                this.description = "Stone that adds 1 Attack to your character";
+                this.description = "Stone that adds 1 Game.Attack to your character";
                 break;
             case "Chest" :
                 this.title = "Event";
@@ -85,14 +86,15 @@ public class Chooser {
     Chooser(Artifacts art){
         //System.out.println("Current " + event);
         loadImage(art.name,-1);
-        width = (int) (image.getWidth(null)*gp.pixelMult);
-        height = (int) (image.getHeight(null)* gp.pixelMult);
-        choseBut = new Button(x+18,y+325,237,50,gp){
+        width = (int) (image.getWidth(null)* stGp.pixelMult);
+        height = (int) (image.getHeight(null)* stGp.pixelMult);
+        choseBut = new Button(x+18,y+325,237,50, stGp){
             @Override
             public void action(){
                 gp.player.ownedArt.add(art);
                 art.x += (gp.player.ownedArt.size()-1)*100;
                 clear();
+                // no need for isCLicked cuz active is not present
             }
         };
         choseBut.display = false;
@@ -112,8 +114,7 @@ public class Chooser {
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/tornPaper.png")));
             switch (id){
-                case 1,2,3,4  : displayImage = new EventStructure(gp).loadImage(name);  break;
-                case 0,5      : displayImage =  new Entity(gp).LoadImage(name);         break;
+                case 1,2,3,4,5  : displayImage = this.loadImage(name);  break;
 
                 default: displayImage = Artifacts.getArtifact(name).image;
             }
@@ -127,36 +128,36 @@ public class Chooser {
         switch (choserList.size()){
             case 1 :
                 Chooser chooser = choserList.getFirst();
-                chooser.x = 1600/2 - chooser.width/2;
-                chooser.y = (int) (900/2.5  - (double) chooser.height /2);
-                chooser.choseBut.setPosition(chooser.x+18,chooser.y+325);
+                chooser.x = stGp.width/2 - chooser.width/2;
+                chooser.y = (int) (stGp.height/2.5  - (double) chooser.height /2);
+                chooser.choseBut.setPosition(chooser.x+ stGp.getPixel(3),chooser.y+ stGp.getPixel(52));
                 break;
             case 2 :
                 Chooser chooser1 = choserList.getFirst();
-                chooser1.x = (int) ((double) 1600 /2 - (chooser1.width*1.5));
-                chooser1.y = (int) (900/2.5  - (double) chooser1.height /2);
-                chooser1.choseBut.setPosition(chooser1.x+18,chooser1.y+325);
+                chooser1.x = (int) ((double) stGp.width /2 - (chooser1.width*1.5));
+                chooser1.y = (int) (stGp.height/2.5  - (double) chooser1.height /2);
+                chooser1.choseBut.setPosition(chooser1.x+ stGp.getPixel(3),chooser1.y+ stGp.getPixel(52));
 
                 Chooser chooser2 = choserList.getLast();
-                chooser2.x = 1600/2 + chooser2.width/2;
-                chooser2.y = (int) (900/2.5  - (double) chooser2.height /2);
-                chooser2.choseBut.setPosition(chooser2.x+18,chooser2.y+325);
+                chooser2.x = stGp.width/2 + chooser2.width/2;
+                chooser2.y = (int) (stGp.height/2.5  - (double) chooser2.height /2);
+                chooser2.choseBut.setPosition(chooser2.x+ stGp.getPixel(3),chooser2.y+ stGp.getPixel(52));
                 break;
             case 3 :
                 chooser1 = choserList.getFirst();
-                chooser1.x = (int) ((double) 1600 /2 + (chooser1.width*0.6));
-                chooser1.y = (int) (900/2.5  - (double) chooser1.height /2);
-                chooser1.choseBut.setPosition(chooser1.x+18,chooser1.y+325);
+                chooser1.x = (int) ((double) stGp.width /2 + (chooser1.width*0.6));
+                chooser1.y = (int) (stGp.height/2.5  - (double) chooser1.height /2);
+                chooser1.choseBut.setPosition(chooser1.x+ stGp.getPixel(3),chooser1.y+ stGp.getPixel(52));
 
                 chooser2 = choserList.getLast();
-                chooser2.x = 1600/2 - chooser2.width/2;
-                chooser2.y = (int) (900/2.5  - (double) chooser2.height /2);
-                chooser2.choseBut.setPosition(chooser2.x+18,chooser2.y+325);
+                chooser2.x = stGp.width/2 - chooser2.width/2;
+                chooser2.y = (int) (stGp.height/2.5  - (double) chooser2.height /2);
+                chooser2.choseBut.setPosition(chooser2.x+ stGp.getPixel(3),chooser2.y+ stGp.getPixel(52));
 
                 Chooser chooser3 = choserList.get(1);
-                chooser3.x = (int) ((double) 1600 /2 - (chooser3.width*1.6));
-                chooser3.y = (int) (900/2.5  - (double) chooser3.height /2);
-                chooser3.choseBut.setPosition(chooser3.x+18,chooser3.y+325);
+                chooser3.x = (int) ((double) stGp.width /2 - (chooser3.width*1.6));
+                chooser3.y = (int) (stGp.height/2.5  - (double) chooser3.height /2);
+                chooser3.choseBut.setPosition(chooser3.x+ stGp.getPixel(3),chooser3.y+ stGp.getPixel(52));
                 break;
             default:
                 System.out.println(choserList.size());
@@ -252,7 +253,7 @@ public class Chooser {
     }
     public static void clear(){
         for(Chooser ch : Chooser.choserList){
-            gp.clickableList.remove(ch.choseBut);
+            stGp.clickableList.remove(ch.choseBut);
         }
         choserList.clear();
     }

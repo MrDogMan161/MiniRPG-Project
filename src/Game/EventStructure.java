@@ -1,14 +1,13 @@
+package Game;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 
-public class EventStructure {
-    int x,y,width,height;
-    GamePanel gp;
-    Image image,image2;
-    boolean visible = false;
+public class EventStructure extends DrawableObject{
+    Image image2;
     String name;
     Waiter waiter = new Waiter();
     Waiter waiter2 = new Waiter();
@@ -17,50 +16,31 @@ public class EventStructure {
         this.gp = gp;
     }
 
-    public Image loadImage(String name){
+    public void loadImages(String name){
         try {
-            switch (name){
-                case "Chest" :
-                    image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/chestClosed.png")));
-                    image2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/chestOpened.png")));
-                    break;
-                case "Heal" :
-                    image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/healFountain.png")));
-                    image2 = null;
-                    break;
-                case "Skill" :
-                    image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/skillStone.png")));
-                    image2 = null;
-                    break;
-                case "Shop" :
-                    image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/shop.png")));
-                    image2 = null;
-                    break;
-            }
+            image =  loadImage(name);
+            image2 = name.equals("Chest")? ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/chestOpened.png"))) : null;
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return  image;
     }
 
     public void update(){
 
     }
 
-    public void draw(Graphics2D g2){
-        if(visible){
-            g2.drawImage(image,x,y,width,height,null);
-        }
-    }
+    public void spawnStructure(int id){
 
-    public void spawnStructure(String name){
-        image = loadImage(name);
-        if(image!=null){
-            width = (int) (image.getWidth(null) * gp.pixelMult);
-            height = (int) (image.getHeight(null) * gp.pixelMult);
+        switch (id){
+            case 2 : name = "Chest" ;break;
+            case 3 : name = "Shop"; break;
+            case 4 : name = "Heal"; break;
         }
-        this.name = name;
+        loadImages(name);
+        setSize();
+
         visible = true;
         this.ChangePos(3);
     }
@@ -72,8 +52,8 @@ public class EventStructure {
         if(waiter.wait(2)){
             switch (name){
                 case "Chest" :
-                    player.coins+=5;
-                    player.coinCount = "Coins: "+player.coins;
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
+                    Chooser.addNewChooser(Artifacts.getArtifact(new Random().nextInt(22)));
                 break;
                 case "Heal"  :
                     player.maxHealth++;                   // add 1 health

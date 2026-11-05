@@ -1,3 +1,5 @@
+package Game;
+
 import java.util.Random;
 
 public class Attack {
@@ -6,7 +8,7 @@ public class Attack {
     AttackType curType;
 
     enum AttackType{
-        MELEE,RANGE,MAGIC,BUFF,DEBUFF,SPEC,FIRE,WATER,GROUND,HOLY,DARK,POISON
+        MELEE,RANGE,MAGIC,BUFF,DEBUFF,SPEC,FIRE,WATER,GROUND,HOLY,DARK,POISON,NORMAL
     }
 
     Attack(String name,AttackType type,int power,int manaUse,String effect,int effectPower){
@@ -20,29 +22,29 @@ public class Attack {
 
     public void doEffect(Entity target){
         switch (effect){
-            case "Defence"   : target.dfBonus   += effectPower; break;
-            case "Mana"      : target.mana      += effectPower; break;
-            case "MaxMana"   : target.mpBonus   += effectPower; break;
-            case "Health"    : target.health    += effectPower; break;
-            case "MaxHealth" : target.hpBonus   += effectPower; break;
-            case "Attack"    : target.atBonus   += effectPower; break;
 
-            case "Poison"    : target.effects.add(Effects.createEffect(effect,"Defence",power,3));   break;
-            case "Fire"      : target.effects.add(Effects.createEffect(effect,"",power,3));          break;
-            case "Holy"      : target.effects.add(Effects.createEffect(effect,"MaxMana",power,3));   break;
-            case "Dark"      : target.effects.add(Effects.createEffect(effect,"MaxHealth",power,3)); break;
-            case "Ground"    : target.effects.add(Effects.createEffect(effect,"",power,3));          break;
+            case "Poison", "Fire" , "Freeze", "Holy", "Dark" , "Ground" :
+                target.effects.add(Effects.getEffect(effect,1));
+                target.lastDam = effect;
+                break;
 
+
+            default:
+                target.effects.add(Effects.createEffect(curType==AttackType.DEBUFF? "Debuff" : "Buff",effect,effectPower,3));
+                target.lastDam = curType==AttackType.BUFF? "+" +effectPower+" "+effect : effectPower+" "+effect;
+                break;
         }
-        target.lastDam = effectPower>0? "+" +effectPower+" "+effect : effectPower+" "+effect;
+
         target.floatingDam = true;
         target.mana = Math.min(target.mana, target.getMp());
         target.health = Math.min(target.health, target.getHp());
     }
 
-    // an Actual Attack method
+    // an Actual Game.Attack method
     public void doAttack(Entity user,Entity enemy){
         if(user.CheckDead()){return;}
+        if(user.getClass().getName().equals("Player") && user.mana==1 && manaUse>1){((Player)user).activateArtifacts(1);}
+        if(user.mana<manaUse){return;}
         if(this.curType == AttackType.SPEC){
             switch (this.name){
                 case "Undead Summon" : user.gp.spawnEnemy("Zombie",5); break;
@@ -51,7 +53,7 @@ public class Attack {
             return;
         }
 
-        if(effect!=null) { doEffect(this.curType == AttackType.BUFF ? user : enemy ); }
+        if(effect!=null && !effect.isEmpty()) { doEffect(this.curType == AttackType.BUFF ? user : enemy ); }
         if(this.power>0){
             if(user.getClass().getName().equals("Player")){((Player)user).activateArtifacts(1);}
             if(enemy.getClass().getName().equals("Player")){((Player)enemy).activateArtifacts(3);}
@@ -74,9 +76,11 @@ public class Attack {
              case "Warrior" :
                  switch (num) {
                      case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 1, 0,  "", 0); break;
+                     case 1 : toReturn = new Attack("Fire Slash",  AttackType.FIRE, 1, 0,  "Fire", 2); break;
+                     case 2 : toReturn = new Attack("Freeze Slash",AttackType.WATER, 1, 0,  "Freeze", 1); break;
                      // 0,1,2,3 - attack by default
                      case 4 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 3, 2,  "", 0); break;
-                     case 5 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,5,"Defence",-1); break;
+                     case 3 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,0,"MaxHealth",10); break;
 
                      default : break;
                  } break;
@@ -111,8 +115,9 @@ public class Attack {
                  } break;
              case "Skeleton" :
                  switch (num) {
-                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0); break;
-                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,"",0); break;
+                     //case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,0,0,"",0); break;
+                     //case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,0,2,"",0); break;
+                     case 0 : toReturn = new Attack("Fire",         AttackType.DEBUFF,0,0,"MaxHealth",2); break;
                      // 0,1,2,3 - attack by default
                      default : break;
                  } break;
@@ -127,14 +132,14 @@ public class Attack {
              case "EyeMonster" :
                  switch (num) {
                      case 0 : toReturn = new Attack("Byte",    AttackType.MELEE,2,0,"",0); break;
-                     // 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     // 1 : toReturn = new Game.Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
                      // 0,1,2,3 - attack by default
                      default : break;
                  } break;
              case "FireSkull","WaterHand","Knight" :
                  switch (num) {
                      case 0 : toReturn = new Attack("hit",    AttackType.MELEE,2,0,"",0); break;
-                     // 1 : toReturn = new Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
+                     // 1 : toReturn = new Game.Attack("Blood Suck",   AttackType.BUFF,3,2,"Health",3); break;
                      // 0,1,2,3 - attack by default
                      default : break;
                  } break;
@@ -153,30 +158,30 @@ public class Attack {
          return toReturn;
          /*
         return switch (num){
-            case 0 -> new Attack("Sword Slash",  AttackType.MELEE,3,0,5,"",0);
-            case 1 -> new Attack("Heavy Smash",  AttackType.MELEE,4,2,2,"",0);
-            case 2 -> new Attack("Hit",          AttackType.MELEE,1,0,10,"",0);
-            case 3 -> new Attack("Strong Hit",   AttackType.MELEE,3,2,5,"",0);
-            case 4 -> new Attack("Weakening hit",AttackType.MELEE,5,0,2,"Attack",-1);
+            case 0 -> new Game.Attack("Sword Slash",  AttackType.MELEE,3,0,5,"",0);
+            case 1 -> new Game.Attack("Heavy Smash",  AttackType.MELEE,4,2,2,"",0);
+            case 2 -> new Game.Attack("Hit",          AttackType.MELEE,1,0,10,"",0);
+            case 3 -> new Game.Attack("Strong Hit",   AttackType.MELEE,3,2,5,"",0);
+            case 4 -> new Game.Attack("Weakening hit",AttackType.MELEE,5,0,2,"Game.Attack",-1);
 
-            case 5 -> new Attack("Missile",      AttackType.MAGIC,2,0,5,"",0);
-            case 6 -> new Attack("FireBall",     AttackType.MAGIC,5,5,3,"",0);
-            case 7 -> new Attack("Dark missile", AttackType.MAGIC,3,5,3,"",0);
+            case 5 -> new Game.Attack("Missile",      AttackType.MAGIC,2,0,5,"",0);
+            case 6 -> new Game.Attack("FireBall",     AttackType.MAGIC,5,5,3,"",0);
+            case 7 -> new Game.Attack("Dark missile", AttackType.MAGIC,3,5,3,"",0);
 
-            case 8 -> new Attack("Arrow Shot",   AttackType.RANGE,3,0,5,"",0);
-            case 9 -> new Attack("Precise Shot", AttackType.RANGE,6,3,3,"",0);
-            case 10 -> new Attack("Triple Shot",  AttackType.RANGE,8,10,1,"",0);
+            case 8 -> new Game.Attack("Arrow Shot",   AttackType.RANGE,3,0,5,"",0);
+            case 9 -> new Game.Attack("Precise Shot", AttackType.RANGE,6,3,3,"",0);
+            case 10 -> new Game.Attack("Triple Shot",  AttackType.RANGE,8,10,1,"",0);
 
-            case 11 -> new Attack("Damage Buff", AttackType.BUFF,0,5,5,"Attack",1);
-            case 12 -> new Attack("Strong Heal", AttackType.BUFF,0,10,5,"Health",5);
-            case 13 -> new Attack("Heal",        AttackType.BUFF,0,5,5,"Health",2);
+            case 11 -> new Game.Attack("Damage Buff", AttackType.BUFF,0,5,5,"Game.Attack",1);
+            case 12 -> new Game.Attack("Strong Heal", AttackType.BUFF,0,10,5,"Health",5);
+            case 13 -> new Game.Attack("Heal",        AttackType.BUFF,0,5,5,"Health",2);
 
-            case 14 -> new Attack("Debuff",      AttackType.DEBUFF,0,5,5,"Defence",-1);
-            case 15 -> new Attack("Debuff",      AttackType.DEBUFF,0,5,5,"Attack",-1);
+            case 14 -> new Game.Attack("Debuff",      AttackType.DEBUFF,0,5,5,"Defence",-1);
+            case 15 -> new Game.Attack("Debuff",      AttackType.DEBUFF,0,5,5,"Game.Attack",-1);
 
-            case 16 -> new Attack("Counter",     AttackType.SPEC, 0,10,5,"",0);
+            case 16 -> new Game.Attack("Counter",     AttackType.SPEC, 0,10,5,"",0);
 
-            default ->  new Attack("Slash",      AttackType.MELEE,100,1,1,"",0);
+            default ->  new Game.Attack("Slash",      AttackType.MELEE,100,1,1,"",0);
         };
 */
     }

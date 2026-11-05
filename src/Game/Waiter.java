@@ -1,3 +1,5 @@
+package Game;
+
 public class Waiter {
     int timer = 0;
     int FPS = 60;
