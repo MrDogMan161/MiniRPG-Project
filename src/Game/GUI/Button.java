@@ -1,23 +1,27 @@
-package Game;
+package Game.GUI;
+
+import Game.DrawableObject;
+import Game.GamePanel;
+import Game.IClickable;
 
 import java.awt.*;
 
 
-public class Button extends DrawableObject implements IClickable{
+public class Button extends DrawableObject implements IClickable {
 
-    int xText,yText ,font,atk = -1;
-    boolean active = false , clickable = false, displayText = false,subText = false,display = false,displayImage = false;
+    public int xText,yText ,font,atk = -1;
+    public boolean active = false , clickable = false, displayText = false,subText = false,display = false,displayImage = false;
     boolean overlay = false;
-    String text, text2,text3;
+    public String text, text2,text3;
     Color textColor = Color.BLACK;
 
 
-    Button(GamePanel gp){
+    public Button(GamePanel gp){
         this.gp = gp;
         gp.clickableList.add(this);
     }
 
-    Button(int x, int y, int width, int height, GamePanel gp){
+    public Button(int x, int y, int width, int height, GamePanel gp){
         this.x = x;
         this.y = y;
         this.width = width;
@@ -26,7 +30,7 @@ public class Button extends DrawableObject implements IClickable{
         gp.clickableList.add(this);
     }
 
-    public void draw(Graphics2D g2){
+    public void draw(Graphics2D g2,float alpha){
         if(visible) {
             if(display) {
                 g2.fillRect(x, y, width, height);
@@ -74,10 +78,6 @@ public class Button extends DrawableObject implements IClickable{
         }
     }
 
-    public void update(){
-
-    }
-
     public void displaySubText(String text){
         this.text2 = text;
         this.subText = true;
@@ -86,7 +86,7 @@ public class Button extends DrawableObject implements IClickable{
     public void displayText(String text , Color color){
         this.text = text;
         this.textColor = color;
-        displayText = true;
+        displayText = text!=null;
     }
 
     public void setSize(int x, int y){
@@ -112,11 +112,12 @@ public class Button extends DrawableObject implements IClickable{
         return  condX && condY && clickable;
     }
 
+    public void setBVisible(boolean visible){
+        this.setVisible(visible);
+        if(haveImage()) {displayImage = true;}
+    }
+    public void setFont(int f){this.font = f;};
     public void setClickable(){this.clickable = !this.clickable;}
     public boolean getClickable(){return clickable;}
-    public int getX(){return x;}
-    public int getY(){return y;}
-    public int getWidth(){return width;}
-    public int getHeight(){return height;}
     public boolean getBool(){return active;}
 }

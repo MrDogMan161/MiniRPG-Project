@@ -1,21 +1,23 @@
-package Game;
+package Game.Gameplay;
+
+import Game.GamePanel;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends Entity{
-     List<Artifacts> ownedArt = new ArrayList<>();
+     public List<Artifacts> ownedArt = new ArrayList<>();
      int coins;
      String coinCount = "Coins: "+coins;
 
-    Player(GamePanel gp) {
+    public Player(GamePanel gp) {
         super(gp);
     }
 
     public void drawArtifacts(Graphics2D g2){
         for(Artifacts art : ownedArt){
-            art.draw(g2);
+            art.draw(g2,gp.alpha);
         }
     }
 

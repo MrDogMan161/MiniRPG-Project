@@ -1,4 +1,8 @@
-package Game;
+package Game.Gameplay;
+
+import Game.DrawableObject;
+import Game.GamePanel;
+import Game.Waiter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -10,23 +14,26 @@ public class Entity extends DrawableObject {
     int attack, maxHealth, defence, maxMana;
     int health, mana;
     int size = 100;
-    int hpBonus, mpBonus,atBonus,dfBonus;
-    int level = 1, expDrop = 0, expCount = 0, expMax= 2;
+    public int hpBonus, mpBonus,atBonus,dfBonus;
+    public int level = 1, expDrop = 0, expCount = 0, expMax= 2;
     int maxX = 50,timer;
     double deg;
     int pos,barWidth,barHeight,shadowWidth,shadowHeight;
     double powBonus = 1;
-    String name ,curAnim , curHealth,lastDam;
+    public String name ,curAnim , curHealth,lastDam;
     Image healthBar,shadow,effectIm;
-    boolean mirrored,playAnim,floatingDam;
+    public boolean mirrored;
+    boolean playAnim;
+    boolean floatingDam;
+    public boolean skipping = false;
     Waiter waiter = new Waiter();
-    Integer[] attacks = new Integer[4];
-    List<Effects> effects = new CopyOnWriteArrayList<>();
-    Attack.AttackType[] weakness;
+    public Integer[] attacks = new Integer[4];
+    public List<Effects> effects = new CopyOnWriteArrayList<>();
+    public Attack.AttackType[] weakness;
     AffineTransform at = new AffineTransform();
     // exp need = lev^2 - previous exp need
 
-    Entity(GamePanel gp){
+    public Entity(GamePanel gp){
         this.gp = gp;
         healthBar = loadImage("HealthBar");
         shadow = loadImage("EntityShadow");
@@ -133,7 +140,7 @@ public class Entity extends DrawableObject {
             case "Archer"      : attack = 2  ; maxHealth = 9 ; maxMana = 8   ; break;
 
             case "Zombie"      : attack = 1  ; maxHealth = 5 ; maxMana = 2   ; expDrop = 2 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY}; break;
-            case "Skeleton"    : attack = 1  ; maxHealth = 40; maxMana = 2   ; expDrop = 1 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
+            case "Skeleton"    : attack = 1  ; maxHealth = 5 ; maxMana = 2   ; expDrop = 1 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
 
             case "Vampire"     : attack = 3  ; maxHealth = 8 ; maxMana = 5   ; expDrop = 4 ; weakness= new Attack.AttackType[]{Attack.AttackType.FIRE, Attack.AttackType.HOLY};  break;
             case "EyeMonster"  : attack = 1  ; maxHealth = 6 ; maxMana = 5   ; expDrop = 5 ; weakness= new Attack.AttackType[]{Attack.AttackType.POISON};  break;
@@ -184,6 +191,16 @@ public class Entity extends DrawableObject {
                 effect.doEffect(this);
             }
         }
+    }
+
+    public boolean hasEffectOf(String type){
+        boolean toReturn = false;
+        if(!effects.isEmpty()){
+            for(Effects effect : effects){
+                if(effect.effect.equals(type)) {toReturn = true;break;}
+            }
+        }
+        return toReturn;
     }
 
     public void getHurt(double damage, Attack.AttackType type){

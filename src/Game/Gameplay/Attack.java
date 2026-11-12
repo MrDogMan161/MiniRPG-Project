@@ -1,11 +1,12 @@
-package Game;
+package Game.Gameplay;
 
 import java.util.Random;
 
 public class Attack {
     public int power, manaUse, effectPower;
-    String name , effect;
-    AttackType curType;
+    public String name;
+    public String effect;
+    public AttackType curType;
 
     enum AttackType{
         MELEE,RANGE,MAGIC,BUFF,DEBUFF,SPEC,FIRE,WATER,GROUND,HOLY,DARK,POISON,NORMAL
@@ -24,20 +25,26 @@ public class Attack {
         switch (effect){
 
             case "Poison", "Fire" , "Freeze", "Holy", "Dark" , "Ground" :
+                if(target.hasEffectOf(effect)){break;}
+
                 target.effects.add(Effects.getEffect(effect,1));
                 target.lastDam = effect;
+                target.floatingDam = true;
                 break;
 
 
             default:
+                if(target.hasEffectOf(effect)){break;}
                 target.effects.add(Effects.createEffect(curType==AttackType.DEBUFF? "Debuff" : "Buff",effect,effectPower,3));
+
                 target.lastDam = curType==AttackType.BUFF? "+" +effectPower+" "+effect : effectPower+" "+effect;
+                target.floatingDam = true;
                 break;
         }
 
-        target.floatingDam = true;
         target.mana = Math.min(target.mana, target.getMp());
         target.health = Math.min(target.health, target.getHp());
+        target.curHealth = String.valueOf(target.getHp());
     }
 
     // an Actual Game.Attack method
@@ -76,11 +83,11 @@ public class Attack {
              case "Warrior" :
                  switch (num) {
                      case 0 : toReturn = new Attack("Sword Slash", AttackType.MELEE, 1, 0,  "", 0); break;
-                     case 1 : toReturn = new Attack("Fire Slash",  AttackType.FIRE, 1, 0,  "Fire", 2); break;
-                     case 2 : toReturn = new Attack("Freeze Slash",AttackType.WATER, 1, 0,  "Freeze", 1); break;
+                     //case 1 : toReturn = new Attack("Fire Slash",  AttackType.FIRE, 1, 0,  "Fire", 2); break;
+                     //case 2 : toReturn = new Attack("Freeze Slash",AttackType.WATER, 1, 0,  "Freeze", 1); break;
                      // 0,1,2,3 - attack by default
                      case 4 : toReturn = new Attack("Heavy Smash", AttackType.MELEE, 3, 2,  "", 0); break;
-                     case 3 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,0,"MaxHealth",10); break;
+                     //case 3 : toReturn = new Attack("Debuff",      AttackType.DEBUFF,0,0,"MaxHealth",10); break;
 
                      default : break;
                  } break;
@@ -115,9 +122,9 @@ public class Attack {
                  } break;
              case "Skeleton" :
                  switch (num) {
-                     //case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,0,0,"",0); break;
-                     //case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,0,2,"",0); break;
-                     case 0 : toReturn = new Attack("Fire",         AttackType.DEBUFF,0,0,"MaxHealth",2); break;
+                     case 0 : toReturn = new Attack("Hit",          AttackType.MELEE,1,0,"",0); break;
+                     case 1 : toReturn = new Attack("Bone Arrow",   AttackType.RANGE,3,2,"",0); break;
+                     //case 0 : toReturn = new Attack("Fire",         AttackType.DEBUFF,0,0,"MaxHealth",2); break;
                      // 0,1,2,3 - attack by default
                      default : break;
                  } break;

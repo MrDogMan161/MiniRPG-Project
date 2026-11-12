@@ -1,16 +1,20 @@
-package Game;
+package Game.GUI;
+
+import Game.Gameplay.Attack;
+import Game.DrawableObject;
+import Game.GamePanel;
 
 import java.awt.*;
 
 public class ActionPanel extends DrawableObject {
     String name, str,man,def,hp;
     Image hpImage, strImage, defImage, mpImage, equipmentImage, armorImage, weaponImage, necklaceImage,skipImage;
-    ButtonPanel panel;
+    public ButtonPanel panel;
     Button blockButton,skipButton;
     boolean overlay = false;
     String ovrButText,pow,mpUse,effect,type;
 
-    ActionPanel(int x, int y, GamePanel gp){
+    public ActionPanel(int x, int y, GamePanel gp){
         this.x = x;
         this.y = y;
         this.gp = gp;
@@ -18,9 +22,20 @@ public class ActionPanel extends DrawableObject {
         loadImages();
         setSize();
 
-        panel = new ButtonPanel(this.x+gp.getPixel(32), this.y+gp.getPixel(2),250,150,4,gp);
-        panel.visible = true;
-        panel.setRowsColsMargin(4,1,0);
+        panel = new ButtonPanel(this.x+gp.getPixel(32), this.y+gp.getPixel(1),gp.getPixel(23),gp.getPixel(40),4,gp);
+
+        panel.setRowsColsMargin(4,1,0,gp.getPixel(2));
+        panel.addButton("",20,Color.WHITE);
+        panel.addButton("",20,Color.WHITE);
+        panel.addButton("",20,Color.WHITE);
+        panel.addButton("",20,Color.WHITE);
+
+        panel.disableButtonsDisplay();
+        panel.setButtonVisible(true);
+
+        panel.setButtonsSize(gp.getPixel(23),gp.getPixel(8));
+        panel.setButtonImage("SignUIA");
+        panel.updateButPos();
 
         blockButton = new Button(x+19,y+207,100,50,gp);
         blockButton.display = false;
@@ -35,10 +50,7 @@ public class ActionPanel extends DrawableObject {
             public void action() {
                 if(gp.turn==0){
                     gp.turn=1;
-                    gp.updateEffects();
                 }
-
-                // no need for isCLicked cuz active is not present
             }
         };
         skipButton.clickable = true;
@@ -63,17 +75,7 @@ public class ActionPanel extends DrawableObject {
     }
 
     public void update(){
-        if(gp.player.name != null){
-            this.hp  = gp.player.getHp() + "";
-            this.str = gp.player.getAt() + "";
-            this.def = gp.player.getDf() + "";
-            this.man = gp.player.getMp() + "";
-        }else{
-            this.hp  = "0";
-            this.str = "0";
-            this.def = "0";
-            this.man = "0";
-        }
+        if(visible){panel.setVisible(true);}
 
         panel.update();
         blockButton.update();
@@ -81,13 +83,13 @@ public class ActionPanel extends DrawableObject {
 
         for (Button but : panel.buttons) {
             if(but.visible && but.atk > -1 && but.checkCollision(gp.kH.curX,gp.kH.curY)){
-                overlay = true;
+                overlay = but.clickable;
                 if(ovrButText==null || !ovrButText.equals(but.text)) {
                     Attack at = Attack.getAttacks(gp.player.name, but.atk);
                     ovrButText = at.name;
                     pow = "Power: " +at.power;
                     mpUse = "Mp Usage: " +at.manaUse;
-                    type = at.curType.toString()+(at.effectPower>1 ? "x"+at.effectPower : "");
+                    type = at.curType +(at.effectPower>1 ? "x"+at.effectPower : "");
                     effect = at.effect;
                 }
                 break;
@@ -105,7 +107,7 @@ public class ActionPanel extends DrawableObject {
 
                 if (panel.buttons != null) {
                     for (Button but : panel.buttons) {
-                        but.draw(g2);
+                        but.draw(g2,gp.alpha);
                     }
                 }
 
@@ -134,8 +136,8 @@ public class ActionPanel extends DrawableObject {
 
 
 
-            blockButton.draw(g2);
-            skipButton.draw(g2);
+            blockButton.draw(g2,gp.alpha);
+            skipButton.draw(g2,gp.alpha);
 
             if (overlay){
                 int mX = gp.kH.curX+gp.getPixel(2), mY = gp.kH.curY;
@@ -168,4 +170,15 @@ public class ActionPanel extends DrawableObject {
         }
     }
 
+    public void setParameters(String name,int str,int hp,int mp,int def){
+        this.name = name;
+        this.str = String.valueOf(str);
+        this.hp  = String.valueOf(hp);
+        this.man = String.valueOf(mp);
+        this.def = String.valueOf(def);
+    }
+
+    public void enableButtons(boolean enable){
+       panel.enableButtons(enable);
+    }
 }

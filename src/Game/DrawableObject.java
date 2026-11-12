@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public abstract class DrawableObject {
     public int x,y,width,height;
+    public float prevX,prevY,velX,velY;
     public Image image;
     public boolean visible = false , mirrored = false;
     public GamePanel gp;
@@ -46,10 +47,28 @@ public abstract class DrawableObject {
                 // Artifact
                 case "Test Shield" -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightShield.png")));
                 case "Test Sword"  -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightSword.png")));
+
+                case "Training Arrow"     -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/trainingArrow.png")));
+                case "Novice Scroll"      -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/noviceScroll.png")));
+                case "Wooden Shield"      -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/woodenShield.png")));
+                case "Sharpening Stone"   -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/sharpeningStone.png")));
+                case "Veteran Helmet"     -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/veteranHelmet.png")));
+                case "Iron Shield"        -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/ironShield.png")));
+                case "Steel Heart"        -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/steelHeart.png")));
+                case "Copper Brace"       -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/copperBraclet.png")));
+                case "Lucky Coin"         -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/luckyCoin.png")));
+                case "Lucky Dice"         -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/luckyDice.png")));
+                case "Thorn"              -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/thorn.png")));
+                case "Berserk Heart"      -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/berserkHeart.png")));
+                case "Skull of Suffering" -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/skullOfSuffering.png")));
+                case "Fire Scroll"        -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/fireScroll.png")));
+                case "Icicle"             -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/icicle.png")));
+                case "Magic Crystal"      -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/magicCrystal.png")));
                 // GUI Components
                 case "ActionBook"   -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/actionBookFolder/actionBook.png")));
                 case "ButtonSkip"   -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/icons/skip.png")));
                 case "SignUI"       -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/signUI.png")));
+                case "SignUIA"       -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/signUIA.png")));
 
                 case "SwordIcon"    -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/actionBookFolder/swordIcon.png")));
                 case "HealthIcon"   -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/actionBookFolder/hpIcon.png")));
@@ -69,7 +88,7 @@ public abstract class DrawableObject {
 
                 case "MapBackground"-> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/mapBackground.png")));
                 case "ScrollBut"    -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/scrollBut.png")));
-                //case "StartButtonB" -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/startButtonBG.png")));
+
                 //case "BridgeD"      -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/bridgeD.png")));
                 case "MapTower"     -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/towerIconMap.png")));
                 case "MapEnemy"     -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/event/mapEnemy.png")));
@@ -88,12 +107,29 @@ public abstract class DrawableObject {
         }
     }
 
-    public void draw(Graphics2D g2){if(visible){g2.drawImage(image,x,y,width,height,null);}}
+    public void draw(Graphics2D g2,float alpha){
+        if(visible){
+            float renderX = prevX+alpha*(x-prevX);
+            float renderY = prevY+alpha*(y-prevY);
+            g2.drawImage(image, (int) renderX, (int) renderY,width,height,null);
+        }
+    }
 
     public void setSize(){
         width  = (int)(image.getWidth(null)*gp.pixelMult);
         height = (int)(image.getHeight(null)*gp.pixelMult);
     }
+    public void update(){
+        this.x += velX;
+        this.y += velY;
+    }
+    public void savePrevious(){
+        prevX = x;
+        prevY = y;
+    }
+
+    public void setVisible(boolean visible){this.visible = visible;}
+    public boolean haveImage(){return image!=null;}
     public int getX(){return x;}
     public int getY(){return y;}
     public int getWidth(){return width;}

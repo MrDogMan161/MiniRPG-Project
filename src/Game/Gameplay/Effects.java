@@ -1,7 +1,7 @@
-package Game;
+package Game.Gameplay;
 
 
-import java.awt.*;
+import Game.DrawableObject;
 
 public class Effects extends DrawableObject {
     Attack.AttackType curType;
@@ -67,17 +67,20 @@ public class Effects extends DrawableObject {
                 case "Mana"      : if(!isActivated) {isActivated=true; entity.mpBonus-=power;} break;
 
                 case "Fire"      : entity.loadEffect("Fire"); entity.health -=power; break;
-                case "Freeze"    : entity.loadEffect("Freeze"); entity.gp.turn++; break;
+                case "Freeze"    : entity.loadEffect("Freeze"); entity.skipping=true; break;
 
             }
 
         }else{
             entity.health = Math.min(entity.health+1, entity.maxHealth);
         }
-        duration--;
         entity.mana = Math.min(entity.mana, entity.getMp());
         entity.health = Math.min(entity.health, entity.getHp());
+        entity.curHealth = String.valueOf(entity.getHp());
+    }
 
+    public void decreaseEffect(Entity entity){
+        duration--;
         if(duration<=0){
             switch (effect){
                 case "Health"    : entity.health +=power; break;
@@ -85,7 +88,7 @@ public class Effects extends DrawableObject {
                 case "Attack"    : entity.atBonus+=power; break;
                 case "Defence"   : entity.dfBonus+=power; break;
                 case "Mana"      : entity.mpBonus+=power; break;
-
+                case "Freeze"    : entity.skipping=false; break;
             }
             entity.effectIm=null;
             entity.effects.remove(this);

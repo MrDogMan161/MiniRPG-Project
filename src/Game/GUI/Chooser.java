@@ -1,4 +1,8 @@
-package Game;
+package Game.GUI;
+
+import Game.Gameplay.Artifacts;
+import Game.DrawableObject;
+import Game.GamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -10,11 +14,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Chooser extends DrawableObject {
     int displayWidth = (int) (16* stGp.pixelMult),displayHeight = (int) (16* stGp.pixelMult);
     boolean choped = false;
-    static List<Chooser> choserList = new CopyOnWriteArrayList<>();
+    public static List<Chooser> choserList = new CopyOnWriteArrayList<>();
     Image displayImage;
     String title,name,description,desc2 = " ",desc3 = " ";
     Button choseBut;
-    static GamePanel stGp;
+    public static GamePanel stGp;
 
     Chooser(String event,int id){
         //System.out.println("Current " + event);
@@ -91,8 +95,8 @@ public class Chooser extends DrawableObject {
         choseBut = new Button(x+18,y+325,237,50, stGp){
             @Override
             public void action(){
-                gp.player.ownedArt.add(art);
-                art.x += (gp.player.ownedArt.size()-1)*100;
+                stGp.player.ownedArt.add(art);
+                art.x += (stGp.player.ownedArt.size()-1)*100;
                 clear();
                 // no need for isCLicked cuz active is not present
             }
@@ -164,6 +168,15 @@ public class Chooser extends DrawableObject {
         }
     }
 
+    @Override
+    public void update(){
+        this.x += velX;
+        this.y += velY;
+
+        choseBut.savePrevious();
+        choseBut.update();
+    }
+
     public void draw(Graphics2D g2){
         if(visible) {
             g2.drawImage(image, x, y, width, height, null);
@@ -198,8 +211,7 @@ public class Chooser extends DrawableObject {
                 g2.drawString(description, x + (width / 2 - fm.stringWidth(description) / 2), y + 200 + fm.getHeight());
             }
 
-
-            choseBut.draw(g2);
+            choseBut.draw(g2, stGp.alpha);
             //g2.fillRect(x+18,y+325,237,50);
         }
     }
@@ -242,6 +254,14 @@ public class Chooser extends DrawableObject {
         }
     }
 
+    public static void updateAll(){
+        if(!choserList.isEmpty()){
+            for(Chooser chooser : choserList){
+                chooser.savePrevious();
+                chooser.update();
+            }
+        }
+    }
     public static void drawAll(Graphics2D g2){
         if(!choserList.isEmpty()){
             for(Chooser chooser : choserList){

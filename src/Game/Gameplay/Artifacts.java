@@ -1,24 +1,20 @@
-package Game;
+package Game.Gameplay;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.IOException;
-import java.util.Objects;
+import Game.DrawableObject;
+import Game.GamePanel;
+
 import java.util.Random;
 
-public class Artifacts {
-    String name, setName,condDesc;
-    boolean active = false,flatOrScale = false; // false = flat ; true =  % ;
+public class Artifacts extends DrawableObject {
+    public String name,condDesc;
+    public boolean active = false,flatOrScale = false; // false = flat ; true =  % ;
     double hpBonus,atBonus,dfBonus,mpBonus;
-    int x,y,width = 100,height = 100 , id;
-    Image image;
-    static GamePanel gp;
+    int id;
+    public static GamePanel gp;
 
-    Artifacts(){
-    }
-    Artifacts(String name,String setName,double health,double attack,double defence,double mana, boolean fOs ,int id){
+    Artifacts(){}
+    Artifacts(String name,double health,double attack,double defence,double mana, boolean fOs ,int id){
         this.name = name;
-        this.setName = setName;
         this.hpBonus = health;
         this.atBonus = attack;
         this.dfBonus = defence;
@@ -26,50 +22,38 @@ public class Artifacts {
         this.flatOrScale = fOs;
         this.id = id;
         condDesc = getDescription();
-        image = loadImages(id);
+        image = loadImage(name);
+        image = image==null? loadImage("Skeleton") : image;
+        width = 100;
+        height = 100;
+        visible = true;
     }
 
-    public Image loadImages(int num){
-        try{
-            return switch (num){
-                case 0 -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightShield.png")));
-                case 1 -> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/Artifacts/knightSword.png")));
-                default-> ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/chars/skeleton.png")));
-            };
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void draw(Graphics2D g2){
-        g2.drawImage(image,x,y,width,height,null);
-    }
 
     public static Artifacts getArtifact(int num){
         return switch(num){
-            case 0 -> new Artifacts("Test Shield",        "Knight", 0,0,1,0,  false,num);
-            case 1 -> new Artifacts("Test Sword" ,        "Knight", 0,5,0,0,  false,num);
-            case 2 -> new Artifacts("Training Arrow",     "Trainee",1,1,0,0,  false,num);
-            case 3 -> new Artifacts("Novice Scroll",      "Trainee",0,1,0,1,  false,num);
-            case 4 -> new Artifacts("Wooden Shield",      "Trainee",0,1,1,0,  false,num);
-            case 5 -> new Artifacts("Sharpening Stone",   "None",   0,1,0,0,  false,num);
-            case 6 -> new Artifacts("Veteran's Helmet",   "None",   0,0,0,0,  false,num); // must heal not increase health
-            case 7 -> new Artifacts("Iron Shield",        "Metal",  -5,0,1,0, false,num);
-            case 8 -> new Artifacts("Steal Heart",        "Metal",  2,0,0,0,  false,num);
-            case 9 -> new Artifacts("Copper Bracelet",    "Metal",  0,0,1,0,  false,num);
-            case 10 -> new Artifacts("Lucky Coin",        "Lucky",  0,1.5,0,0,true, num); // on Game.Attack
-            case 11 -> new Artifacts("Lucky Dice",        "Lucky",  0,2,0,0,  true, num); // on Game.Attack
-            case 12 -> new Artifacts("Spiked Shield",     "Spike",  -1,0,0,0, false,num); // on Damaged
-            case 13 -> new Artifacts("Berserk Heart",     "Berserk",0,2,0,0,  false,num);
-            case 14 -> new Artifacts("Skull of Suffering","Berserk",0,0,0,0,  false,num); // on Damaged
-            case 15 -> new Artifacts("Fire Scroll",       "Fire",   0,0,0,0,  false,num); // enemy on fire
-            case 16 -> new Artifacts("Icicle",            "Ice",    0,2,0,0,  false,num); // freeze enemy
-            case 17 -> new Artifacts("Magic Crystal",     "Magic",  0,0,0,2,  false,num);
-            case 18 -> new Artifacts("Magic Book",        "Magic",  0,0,0,0,  false,num); // -1 mana use
-            case 19 -> new Artifacts("Magic Eye",         "Magic",  0,2,0,0,  false,num); // if mp is 1 can use any attack with +1 dm
-            case 20 -> new Artifacts("Silver Sword",      "Silver", 0,0,0,0,  false,num); // ignore 1 armor
-            case 21 -> new Artifacts("Silver Necklace",   "Silver", 0,0,0,0,  false,num); // healing +1
+            case 0 -> new Artifacts("Test Shield",        0,0,1,0,  false,num);
+            case 1 -> new Artifacts("Test Sword" ,        0,5,0,0,  false,num);
+            case 2 -> new Artifacts("Training Arrow",     1,1,0,0,  false,num);
+            case 3 -> new Artifacts("Novice Scroll",      0,1,0,1,  false,num);
+            case 4 -> new Artifacts("Wooden Shield",      0,1,1,0,  false,num);
+            case 5 -> new Artifacts("Sharpening Stone",   0,1,0,0,  false,num);
+            case 6 -> new Artifacts("Veteran Helmet",   0,0,0,0,  false,num); // must heal not increase health
+            case 7 -> new Artifacts("Iron Shield",       -5,0,1,0, false,num);
+            case 8 -> new Artifacts("Steel Heart",        2,0,0,0,  false,num);
+            case 9 -> new Artifacts("Copper Bracelet",    0,0,1,0,  false,num);
+            case 10 -> new Artifacts("Lucky Coin",        0,1.5,0,0,true, num); // on Game.Attack
+            case 11 -> new Artifacts("Lucky Dice",        0,2,0,0,  true, num); // on Game.Attack
+            case 12 -> new Artifacts("Thorn",            -1,0,0,0, false,num); // on Damaged
+            case 13 -> new Artifacts("Berserk Heart",     0,2,0,0,  false,num);
+            case 14 -> new Artifacts("Skull of Suffering",0,0,0,0,  false,num); // on Damaged
+            case 15 -> new Artifacts("Fire Scroll",       0,0,0,0,  false,num); // enemy on fire
+            case 16 -> new Artifacts("Icicle",            0,2,0,0,  false,num); // freeze enemy
+            case 17 -> new Artifacts("Magic Crystal",     0,0,0,2,  false,num);
+            case 18 -> new Artifacts("Magic Book",        0,0,0,0,  false,num); // -1 mana use
+            case 19 -> new Artifacts("Magic Eye",         0,2,0,0,  false,num); // if mp is 1 can use any attack with +1 dm
+            case 20 -> new Artifacts("Silver Sword",      0,0,0,0,  false,num); // ignore 1 armor
+            case 21 -> new Artifacts("Silver Necklace",   0,0,0,0,  false,num); // healing +1
 
             default -> new Artifacts();
         };
@@ -127,13 +111,13 @@ public class Artifacts {
             case "Novice Scroll"      -> getArtifact(3);
             case "Wooden Shield"      -> getArtifact(4);
             case "Sharpening Stone"   -> getArtifact(5);
-            case "Veteran's Helmet"   -> getArtifact(6);
+            case "Veteran Helmet"     -> getArtifact(6);
             case "Iron Shield"        -> getArtifact(7);
-            case "Steal Heart"        -> getArtifact(8);
+            case "Steel Heart"        -> getArtifact(8);
             case "Copper Bracelet"    -> getArtifact(9);
             case "Lucky Coin"         -> getArtifact(10);
             case "Lucky Dice"         -> getArtifact(11);
-            case "Spiked Shield"      -> getArtifact(12);
+            case "Thorn"              -> getArtifact(12);
             case "Berserk Heart"      -> getArtifact(13);
             case "Skull of Suffering" -> getArtifact(14);
             case "Fire Scroll"        -> getArtifact(15);
@@ -151,7 +135,7 @@ public class Artifacts {
     public String getDescription(){
       return switch(id){
           // o -> 4,9
-          case 1 -> "if Game.Player have more then 1 defence gives 5 attack";
+          case 1 -> "if Player have more then 1 defence gives 5 attack";
           case 2,5 -> "Gives 1 attack";
           case 3 -> "Gives 1 mana";
           case 0,4,9-> "Gives 1 defence";
@@ -160,16 +144,16 @@ public class Artifacts {
           case 7 -> "Gives 1 defence in exchange for 5 health";
           case 8,13 -> "Gives 2 health";
           // 9 -> 4
-          case 10 -> "Each Game.Attack has 10% chance to have 150% damage";
-          case 11 -> "Each Game.Attack has 10% chance to have 200% damage";
+          case 10 -> "Each Attack has 10% chance to have 150% damage";
+          case 11 -> "Each Attack has 10% chance to have 200% damage";
           case 12 -> "Deal 1 damage to Enemy when Attacked";
           // 13 -> 8
           case 14 -> "When damaged gives 1 attack for single encounter";
-          case 15 -> "Puts Enemies on Fire(WIP)";
-          case 16 -> "Freezes Enemies(WIP)";
+          case 15 -> "Puts Enemies on Fire";
+          case 16 -> "Freezes Enemies";
           case 17 -> "Gives 2 mana";
           case 18 -> "Attacks use less mana -1";
-          case 19 -> "If mp is at 1 give +1 and can use any Game.Attack";
+          case 19 -> "If mp is at 1 give +1 and can use any Attack";
           case 20 -> "Ignore 1 enemy armor";
           case 21 -> "Increase healing by 1";
 
@@ -204,10 +188,9 @@ public class Artifacts {
             case 14 :
                 gp.player.atBonus++; break;
             case 15 :
-                gp.getClothestEnemy().effects.add(Effects.createEffect("Fire","Health",1,3)); break;
+                gp.getClothestEnemy().effects.add(Effects.getEffect("Fire",1)); break;
             case 16 :
-                gp.turn++;
-                break;
+                gp.getClothestEnemy().effects.add(Effects.getEffect("Freeze",1)); break;
             case 18 :
                 gp.player.mana = Math.min(gp.player.mana++,gp.player.maxMana);
                 break;
@@ -262,7 +245,8 @@ public class Artifacts {
     }
     public boolean checkBeforeAt(){
         return switch (id){
-            case 10,11 -> getRandom(5); // 1/10 == 10%
+            case 10,11 -> getRandom(10); // 1/10 == 10%
+            case 15,16 -> getRandom(4);  // 1/2  == 50%
             case 19 -> gp.player.mana==1;
 
             default -> false;

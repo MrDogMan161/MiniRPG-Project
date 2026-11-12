@@ -1,14 +1,20 @@
-package Game;
+package Game.Gameplay;
+
+import Game.DrawableObject;
+import Game.GUI.Button;
+import Game.GUI.Chooser;
+import Game.GamePanel;
+import Game.Waiter;
 
 import java.awt.*;
 import java.util.Random;
 
-public class Map extends DrawableObject{
-    Image bridgeU,bridgeS,bridgeD,towerIm;
+public class Map extends DrawableObject {
+    Image towerIm;
     Image enemy,eventF, eventE,eventSh,enemyC,eventFC, eventEC,eventShC;
     int[][][] path = new int[15][8][4]; // 0,1,2 connected points; 3 - value
-    int currentRoom = -1,currentFloor = -1;
-    Button path1,path2,path3;
+    public int currentRoom = -1,currentFloor = -1;
+    Game.GUI.Button path1,path2,path3;
     Waiter waiter = new Waiter();
     int start1,start2;
     // Chance for room to appear
@@ -20,7 +26,7 @@ public class Map extends DrawableObject{
     //int bridgeWidth,bridgeHeight, bridgeWidthS,bridgeHeightS;
     int towerWidth,towerHeight,marginX=100,marginY=100,offsetX,offsetY;
 
-    Map(GamePanel gp){
+    public Map(GamePanel gp){
         this.gp = gp;
         image = loadImage("MapBackground");
         //bridgeU = loadImage("BridgeU");
@@ -93,6 +99,7 @@ public class Map extends DrawableObject{
                         /*if (path[i][j][3] == 0) {
                             g2.drawImage(towerIm,posX,posY,towerWidth, towerHeight,null);
                         }*/
+                        
                         if (path[i][j][3] != 0) {
                             g2.setStroke(new BasicStroke(5,BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER,10, new float[]{10, 5}, 0));
                             int lineStartX = posX+towerWidth,lineStartY = posY+towerHeight/2;
@@ -181,7 +188,7 @@ public class Map extends DrawableObject{
             //System.out.println("Starting");
             int posX = x+offsetX, posY = ((start1)*marginY)+towerHeight+marginY+y+offsetY;
 
-            path1 = new Button(posX, posY, towerWidth, towerHeight, gp){
+            path1 = new Game.GUI.Button(posX, posY, towerWidth, towerHeight, gp){
                 @Override
                 public void action(){
                     currentRoom = start1;
@@ -195,7 +202,7 @@ public class Map extends DrawableObject{
                 }
             };
             int posX1 = x+offsetX, posY1 = (start2*marginY)+towerHeight+marginY+y+offsetY;
-            path2 = new Button(posX1, posY1, towerWidth, towerHeight, gp){
+            path2 = new Game.GUI.Button(posX1, posY1, towerWidth, towerHeight, gp){
                 @Override
                 public void action(){
                     currentRoom = start2;
@@ -226,7 +233,7 @@ public class Map extends DrawableObject{
             int posX = ((currentFloor+2)*marginX)+((currentFloor+1)*towerWidth)+x+offsetX, posY = ((currentRoom-3)*marginY)+towerHeight+marginY+y+offsetY;
             if(path1!=null) {gp.clickableList.remove(path1);path1 = null;}
 
-            path1 = new Button(posX, posY, towerWidth, towerHeight, gp){
+            path1 = new Game.GUI.Button(posX, posY, towerWidth, towerHeight, gp){
                 @Override
                 public void action(){
                     currentRoom--;
@@ -249,7 +256,7 @@ public class Map extends DrawableObject{
             int posX = ((currentFloor+2)*marginX)+((currentFloor+1)*towerWidth)+x+offsetX, posY = ((currentRoom-2)*marginY)+towerHeight+marginY+y+offsetY;
             if(path2!=null) {gp.clickableList.remove(path2);path2 = null;}
 
-            path2 = new Button(posX, posY, towerWidth, towerHeight, gp){
+            path2 = new Game.GUI.Button(posX, posY, towerWidth, towerHeight, gp){
                 @Override
                 public void action(){
                     currentFloor++;
@@ -294,6 +301,11 @@ public class Map extends DrawableObject{
         }
     }
 
+    public void resetMap(){
+        currentRoom = -1;
+        currentFloor= -1;
+        path = new int[15][7][4];
+    }
     public int[] getCurRoom(){return path[currentFloor][currentRoom-1];}
     public int getCurEvent(){return path[currentFloor][currentRoom-1][3];}
 
